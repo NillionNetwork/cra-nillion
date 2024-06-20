@@ -6,26 +6,33 @@ Video setup guide: https://www.loom.com/share/c4196fca27474c2c8567a3a87e036217?s
 
 ## Run nillion-devnet
 
-Install the very latest version of nillion-devnet. Run the devnet
+Re-install the `latest-experimental` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
+
+```
+nilup install latest-experimental
+nilup use latest-experimental
+```
+
+Run the devnet using any seed (the example uses "my-seed") so the cluster id, websockets, and other environment variables stay constant even when you restart nillion-devnet.
 
 ```shell
-nillion-devnet
+nillion-devnet --seed my-seed
 ```
 
 You will see an output like this:
 
 ```
-nillion-devnet --seed scaffold-nillion
-ℹ️ cluster id is 18d71351-b5d9-4d8d-bbcd-cdcc615badab
+nillion-devnet --seed my-seed
+ℹ️ cluster id is 222257f5-f3ce-4b80-bdbc-0a51f6050996
 ℹ️ using 256 bit prime
-ℹ️ storing state in /var/folders/1_/2yw8krkx5q5dn2jbhx69s4_r0000gn/T/.tmpOUWo45 (68.73Gbs available)
-🏃 starting nilchain node in: /var/folders/1_/2yw8krkx5q5dn2jbhx69s4_r0000gn/T/.tmpOUWo45/nillion-chain
+ℹ️ storing state in /var/folders/1_/2yw8krkx5q5dn2jbhx69s4_r0000gn/T/.tmpU00Jbm (62.14Gbs available)
+🏃 starting nilchain node in: /var/folders/1_/2yw8krkx5q5dn2jbhx69s4_r0000gn/T/.tmpU00Jbm/nillion-chain
 ⛓  nilchain JSON RPC available at http://127.0.0.1:48102
 ⛓  nilchain gRPC available at localhost:26649
-🏃 starting node 12D3KooWNQTeFoEFHLp46RVG3ydUSZ9neeoAL44DSRYjExWLsRQ4
+🏃 starting node 12D3KooWMGxv3uv4QrGFF7bbzxmTJThbtiZkHXAgo3nVrMutz6QN
 ⏳ waiting until bootnode is up...
-🏃 starting node 12D3KooWGVUmVWzYBPhm1fKKPYiV2gxj51o37pdVuGjVhdWWTWR1
-🏃 starting node 12D3KooWCncgNnNebnL8FQB49GdK18aVNi7oDr5ooyAc59QaFseZ
+🏃 starting node 12D3KooWKkbCcG2ujvJhHe5AiXznS9iFmzzy1jRgUTJEhk4vjF7q
+🏃 starting node 12D3KooWMgLTrRAtP9HcUYTtsZNf27z5uKt3xJKXsSS2ohhPGnAm
 👛 funding nilchain keys
 📝 nillion CLI configuration written to /Users/steph/Library/Application Support/nillion.nillion/config.yaml
 🌄 environment file written to /Users/steph/Library/Application Support/nillion.nillion/nillion-devnet.env
