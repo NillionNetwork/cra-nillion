@@ -1,0 +1,27 @@
+.container {
+  margin: 0 auto;
+  width: 90%;
+}
+
+h1 {
+  font-size: x-large;
+  font-weight: bolder;
+  margin-top: 10px;
+}
+
+h2 {
+  font-size: large;
+  font-weight: bolder;
+  margin-top: 10px;
+}
+
+h3 {
+  font-size: medium;
+  font-weight: bolder;
+}
+
+.MuiInputBase-root {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+  padding: 2px !important;
+}

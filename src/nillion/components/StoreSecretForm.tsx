@@ -1,0 +1,256 @@
+import React, { useState } from 'react';
+import * as nillion from '@nillion/client';
+import { getQuote } from '../helpers/getQuote';
+import {
+  createNilChainClientAndWalletFromPrivateKey,
+  payWithWalletFromPrivateKey,
+} from '../helpers/nillion';
+import { storeSecrets } from '../helpers/storeSecrets';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import { List, ListItem, ListItemText } from '@mui/material';
+
+type SecretDataType = 'SecretBlob' | 'SecretInteger';
+
+interface SecretFormProps {
+  onNewStoredSecret: (data: any) => void;
+  secretName: string;
+  nillionClient: nillion.NillionClient | null;
+  isDisabled?: boolean;
+  isLoading?: boolean;
+  secretType: SecretDataType;
+  customSecretName?: boolean;
+  hidePermissions?: boolean;
+  itemName?: string;
+  defaultUserWithComputePermissions?: string;
+  defaultProgramIdForComputePermissions?: string;
+}
+
+const SecretForm: React.FC<SecretFormProps> = ({
+  onNewStoredSecret,
+  secretName,
+  nillionClient,
+  isDisabled = false,
+  isLoading = false,
+  customSecretName = false,
+  secretType,
+  hidePermissions = false,
+  itemName = 'secret',
+  defaultUserWithComputePermissions = '',
+  defaultProgramIdForComputePermissions = '',
+}) => {
+  const [secretNameFromForm, setSecretNameFromForm] = useState(secretName);
+  const [secret, setSecret] = useState('');
+  const [quote, setQuote] = useState<any | null>(null);
+  const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
+  const [storedSecrets, setStoredSecrets] = useState<any | null>([]);
+  const [loading, setLoading] = useState(isLoading);
+  const [
+    permissionedUserIdForRetrieveSecret,
+    setPermissionedUserIdForRetrieveSecret,
+  ] = useState('');
+  const [
+    permissionedUserIdForUpdateSecret,
+    setPermissionedUserIdForUpdateSecret,
+  ] = useState('');
+  const [
+    permissionedUserIdForDeleteSecret,
+    setPermissionedUserIdForDeleteSecret,
+  ] = useState('');
+  const [
+    permissionedUserIdForComputeSecret,
+    setPermissionedUserIdForComputeSecret,
+  ] = useState(defaultUserWithComputePermissions);
+
+  const [programIdForComputePermissions, setProgramIdForComputePermissions] =
+    useState(defaultProgramIdForComputePermissions);
+
+  const reset = () => {
+    setSecretNameFromForm(secretName);
+    setSecret('');
+    setPermissionedUserIdForRetrieveSecret('');
+    setPermissionedUserIdForUpdateSecret('');
+    setPermissionedUserIdForDeleteSecret('');
+    setPermissionedUserIdForComputeSecret(defaultUserWithComputePermissions);
+    setProgramIdForComputePermissions(defaultProgramIdForComputePermissions);
+    setSecret('');
+    setQuote(null);
+  };
+
+  const handleGetQuoteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (nillionClient) {
+      // setLoading(true);
+
+      const secretForQuote = new nillion.Secrets();
+
+      if (secretType === 'SecretBlob') {
+        const byteArraySecret = new TextEncoder().encode(secret);
+        // create new SecretBlob with encoded secret
+        const newSecretBlob = nillion.Secret.new_blob(byteArraySecret);
+        // insert the SecretBlob into secrets object
+        secretForQuote.insert(secretNameFromForm, newSecretBlob);
+      } else {
+        // create new SecretInteger
+        const newSecretInteger = nillion.Secret.new_integer(secret.toString());
+
+        // insert the SecretInteger into secrets object
+        secretForQuote.insert(secretNameFromForm, newSecretInteger);
+      }
+
+      const storeOperation = nillion.Operation.store_secrets(secretForQuote);
+
+      const quote = await getQuote({
+        client: nillionClient,
+        operation: storeOperation,
+      });
+
+      setQuote({
+        quote,
+        quoteJson: quote.toJSON(),
+        secret: secretForQuote,
+        rawSecret: { name: secretNameFromForm, value: secret },
+        operation: storeOperation,
+      });
+      // setLoading(false);
+    }
+  };
+
+  const handlePayAndStore = async () => {
+    // setLoading(true);
+    if (nillionClient && quote?.operation) {
+      const [nilChainClient, nilChainWallet] =
+        await createNilChainClientAndWalletFromPrivateKey();
+
+      const paymentReceipt = await payWithWalletFromPrivateKey(
+        nilChainClient,
+        nilChainWallet,
+        quote
+      );
+
+      setPaymentReceipt(paymentReceipt);
+
+      const permissions = {
+        usersWithRetrievePermissions: permissionedUserIdForRetrieveSecret
+          ? [permissionedUserIdForRetrieveSecret]
+          : [],
+        usersWithUpdatePermissions: permissionedUserIdForUpdateSecret
+          ? [permissionedUserIdForUpdateSecret]
+          : [],
+        usersWithDeletePermissions: permissionedUserIdForDeleteSecret
+          ? [permissionedUserIdForDeleteSecret]
+          : [],
+        usersWithComputePermissions: permissionedUserIdForComputeSecret
+          ? [permissionedUserIdForComputeSecret]
+          : [],
+        programIdForComputePermissions,
+      };
+
+      const storeId = await storeSecrets({
+        nillionClient,
+        nillionSecrets: quote.secret,
+        storeSecretsReceipt: paymentReceipt,
+        ...permissions,
+      });
+
+      const newStoredSecret = {
+        userId: nillionClient.user_id,
+        storeId,
+        secretType,
+        name: quote.rawSecret.name,
+        ...permissions,
+      };
+      setStoredSecrets((current: any) => {
+        const updatedStoredSecrets = [...current];
+        updatedStoredSecrets.push(newStoredSecret);
+        return updatedStoredSecrets;
+      });
+      onNewStoredSecret(newStoredSecret);
+    }
+  };
+
+  return loading ? (
+    'Storing secret...'
+  ) : (
+    <Box component="form" onSubmit={handleGetQuoteSubmit} sx={{ mt: 2 }}>
+      <p>Set your secret value. Get a quote, then pay to store the secret.</p>
+      <br />
+      {customSecretName && (
+        <TextField
+          label={`Set ${itemName} name`}
+          value={secretNameFromForm}
+          onChange={(e) => setSecretNameFromForm(e.target.value)}
+          required
+          disabled={isDisabled}
+          fullWidth
+          variant="outlined"
+          margin="normal"
+        />
+      )}
+      <TextField
+        label={`Set ${itemName} value`}
+        type={secretType === 'SecretBlob' ? 'text' : 'number'}
+        value={secret}
+        onChange={(e) => setSecret(e.target.value)}
+        required
+        disabled={isDisabled}
+        fullWidth
+        variant="outlined"
+        margin="normal"
+      />
+      <Button type="submit" variant="contained" color="primary">
+        Get Quote
+      </Button>
+      {quote && (
+        <Box mt={2}>
+          <p>Quote for storage</p>
+          <List>
+            <ListItem>
+              <ListItemText primary={`expires_at: ${quote.quote.expires_at}`} />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={`quote cost base_fee: ${quote.quote.cost.base_fee}`}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={`quote cost congestion_fee: ${quote.quote.cost.congestion_fee}`}
+              />
+            </ListItem>
+            <ListItem>
+              <ListItemText
+                primary={`quote cost total: ${quote.quote.cost.total}`}
+              />
+            </ListItem>
+          </List>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handlePayAndStore}
+          >
+            Pay and store secret
+          </Button>
+          {!!storedSecrets.length &&
+            storedSecrets[storedSecrets.length - 1].storeId && (
+              <List>
+                <ListItem>
+                  <ListItemText
+                    primary={`store id: ${storedSecrets[storedSecrets.length - 1].storeId}`}
+                  />
+                </ListItem>
+                <ListItem>
+                  <ListItemText
+                    primary={`secret name: ${storedSecrets[storedSecrets.length - 1].name}`}
+                  />
+                </ListItem>
+              </List>
+            )}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
+export default SecretForm;
