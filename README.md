@@ -31,23 +31,37 @@ nillion-devnet --seed scaffold-nillion
 🌄 environment file written to /Users/steph/Library/Application Support/nillion.nillion/nillion-devnet.env
 ```
 
-Copy the path that the nillion environment file was written to and open the file
+Copy the path printed after "🌄 environment file written to" and open the file
 
 ```
 vim "/Users/steph/Library/Application Support/nillion.nillion/nillion-devnet.env"
 ```
 
+This file has the nillion-devnet generated values for cluster id, websocket, json rpc, and private key. You'll need to put these in your local .env in one of the next steps so that your cra-nillion demo app connects to the nillion-devnet.
+
+
 ## Clone this repo
 
 ```
-git clone [repo]
-cd [repo]
+git clone https://github.com/NillionNetwork/cra-nillion.git
+cd cra-nillion
 ```
 
 Copy the up the .env.example file to a new .env and set up these variables to match the nillion environment file
 
 ```shell
 cp .env.example .env
+```
+
+Update your newly created .env with environment variables outout in your terminal by nillion-devnet
+
+```
+# replace with values from nillion-devnet
+
+REACT_APP_NILLION_CLUSTER_ID=
+REACT_APP_NILLION_BOOTNODE_WEBSOCKET=
+REACT_APP_NILLION_NILCHAIN_JSON_RPC=
+REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY=
 ```
 
 Install dependencies and start the demo project. Notice that a local nillion_js_client.tgz is installed rather than a version of the JavaScript Client from npm. This version includes payments.
