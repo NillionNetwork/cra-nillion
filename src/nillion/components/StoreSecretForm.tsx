@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import * as nillion from '@nillion/client';
+import { NillionClient } from '@nillion/client';
+import { storeSecrets } from '../helpers/storeSecrets';
 import { getQuote } from '../helpers/getQuote';
 import {
   createNilChainClientAndWalletFromPrivateKey,
   payWithWalletFromPrivateKey,
 } from '../helpers/nillion';
-import { storeSecrets } from '../helpers/storeSecrets';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -16,7 +17,7 @@ type SecretDataType = 'SecretBlob' | 'SecretInteger';
 interface SecretFormProps {
   onNewStoredSecret: (data: any) => void;
   secretName: string;
-  nillionClient: nillion.NillionClient | null;
+  nillionClient: NillionClient | null;
   isDisabled?: boolean;
   isLoading?: boolean;
   secretType: SecretDataType;
@@ -81,21 +82,14 @@ const SecretForm: React.FC<SecretFormProps> = ({
   const handleGetQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (nillionClient) {
-      // setLoading(true);
-
       const secretForQuote = new nillion.Secrets();
 
       if (secretType === 'SecretBlob') {
         const byteArraySecret = new TextEncoder().encode(secret);
-        // create new SecretBlob with encoded secret
         const newSecretBlob = nillion.Secret.new_blob(byteArraySecret);
-        // insert the SecretBlob into secrets object
         secretForQuote.insert(secretNameFromForm, newSecretBlob);
       } else {
-        // create new SecretInteger
         const newSecretInteger = nillion.Secret.new_integer(secret.toString());
-
-        // insert the SecretInteger into secrets object
         secretForQuote.insert(secretNameFromForm, newSecretInteger);
       }
 
@@ -113,12 +107,10 @@ const SecretForm: React.FC<SecretFormProps> = ({
         rawSecret: { name: secretNameFromForm, value: secret },
         operation: storeOperation,
       });
-      // setLoading(false);
     }
   };
 
   const handlePayAndStore = async () => {
-    // setLoading(true);
     if (nillionClient && quote?.operation) {
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
@@ -199,6 +191,85 @@ const SecretForm: React.FC<SecretFormProps> = ({
         variant="outlined"
         margin="normal"
       />
+
+      {!hidePermissions && (
+        <Box sx={{ mt: 2 }}>
+          <TextField
+            label="Optional: Set a user id to grant retrieve permissions to another user"
+            value={permissionedUserIdForRetrieveSecret}
+            onChange={(e) =>
+              setPermissionedUserIdForRetrieveSecret(e.target.value)
+            }
+            disabled={isDisabled}
+            fullWidth
+            variant="outlined"
+            margin="normal"
+          />
+        </Box>
+      )}
+
+      {!hidePermissions && (
+        <Box sx={{ mt: 2 }}>
+          <TextField
+            label="Optional: Set a user id to grant update permissions to another user"
+            value={permissionedUserIdForUpdateSecret}
+            onChange={(e) =>
+              setPermissionedUserIdForUpdateSecret(e.target.value)
+            }
+            disabled={isDisabled}
+            fullWidth
+            variant="outlined"
+            margin="normal"
+          />
+        </Box>
+      )}
+
+      {!hidePermissions && (
+        <Box sx={{ mt: 2 }}>
+          <TextField
+            label="Optional: Set a user id to grant delete permissions to another user"
+            value={permissionedUserIdForDeleteSecret}
+            onChange={(e) =>
+              setPermissionedUserIdForDeleteSecret(e.target.value)
+            }
+            disabled={isDisabled}
+            fullWidth
+            variant="outlined"
+            margin="normal"
+          />
+        </Box>
+      )}
+
+      {!hidePermissions && secretType === 'SecretInteger' && (
+        <Box sx={{ mt: 2 }}>
+          <TextField
+            label="Optional: Set a user id to grant compute permissions to another user"
+            value={permissionedUserIdForComputeSecret}
+            onChange={(e) =>
+              setPermissionedUserIdForComputeSecret(e.target.value)
+            }
+            disabled={isDisabled}
+            fullWidth
+            variant="outlined"
+            margin="normal"
+          />
+        </Box>
+      )}
+
+      {!hidePermissions && secretType === 'SecretInteger' && (
+        <Box sx={{ mt: 2 }}>
+          <TextField
+            label="Optional: Set program id for compute permissions"
+            value={programIdForComputePermissions}
+            onChange={(e) => setProgramIdForComputePermissions(e.target.value)}
+            disabled={isDisabled}
+            fullWidth
+            variant="outlined"
+            margin="normal"
+          />
+        </Box>
+      )}
+
       <Button type="submit" variant="contained" color="primary">
         Get Quote
       </Button>
