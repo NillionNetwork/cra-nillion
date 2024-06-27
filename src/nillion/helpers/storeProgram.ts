@@ -1,5 +1,6 @@
 import { config } from './nillion';
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
+import { transformNadaProgramToUint8Array } from './transformNadaProgramToUint8Array';
 
 interface StoreProgram {
   nillionClient: nillion.NillionClient;
@@ -14,23 +15,18 @@ export async function storeProgram({
   programName,
 }: StoreProgram): Promise<any> {
   try {
-    const user_id = nillionClient.user_id;
-    const compiledProgram = await fetch(`./programs/${programName}.nada.bin`);
+    const programBinary = await transformNadaProgramToUint8Array(
+      `./programs/${programName}.nada.bin`
+    );
 
-    // transform the nada.bin into Uint8Array
-    const arrayBufferProgram = await compiledProgram.arrayBuffer();
-    const uint8Program = new Uint8Array(arrayBufferProgram);
-
-    // store program
     const program_id = await nillionClient.store_program(
       config.clusterId,
       programName,
-      uint8Program,
+      programBinary,
       receipt
     );
     return program_id;
   } catch (error) {
-    console.log(error);
-    return 'error';
+    return error;
   }
 }

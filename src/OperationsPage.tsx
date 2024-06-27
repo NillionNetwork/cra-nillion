@@ -1,25 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import GenerateUserKey from './nillion/components/GenerateUserKey';
-import CreateClient from './nillion/components/CreateClient';
-import { NillionClient } from '@nillion/client';
+import { NillionClient } from '@nillion/client-web';
 import StoreSecretForm from './nillion/components/StoreSecretForm';
 import RetrieveSecret from './nillion/components/RetrieveSecretForm';
 import {
   readStorageForUserAtPage,
-  resetStorageForUserAtPage,
   updateStorageForUserAtPage,
 } from './nillion/helpers/localStorage';
 import UpdateSecretForm from './nillion/components/UpdateSecretForm';
 import StoreProgram from './nillion/components/StoreProgramForm';
-import ConnectionInfo from './nillion/components/ConnectionInfo';
-
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
+import ConnectionSection from './nillion/components/ConnectClient';
+import { Container, Box, Tabs, Tab, Typography } from '@mui/material';
 
 export default function Main() {
   const [userkey, setUserKey] = useState<string | null>(null);
@@ -30,6 +20,7 @@ export default function Main() {
   const [localStorageStoredSecrets, setLocalStorageStoredSecrets] =
     useState<any>({});
   const localStoragePageName = 'main-flow';
+  const [tabIndex, setTabIndex] = useState(0);
 
   useEffect(() => {
     if (userkey && client) {
@@ -63,12 +54,8 @@ export default function Main() {
     }
   };
 
-  const handleLocalStorageReset = () => {
-    if (client) {
-      resetStorageForUserAtPage(client.user_id, localStoragePageName);
-      setStoredSecretInfo({});
-      setLocalStorageStoredSecrets({});
-    }
+  const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setTabIndex(newValue);
   };
 
   return (
@@ -78,119 +65,88 @@ export default function Main() {
         Connect to Nillion with a user key, then experiment by performing
         different operations.
       </p>
-      <ConnectionInfo client={client} userkey={userkey} />
-      {/* {userId && client && (
-        <>
-          <h2>Stored Secrets</h2>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleLocalStorageReset}
-          >
-            Reset local storage
-          </Button>
-          {Object.keys(storedSecretInfo).map((storeId) => {
-            const secret = storedSecretInfo[storeId];
-            return (
-              <Paper
-                key={storeId}
-                elevation={3}
-                sx={{ padding: 2, marginTop: 2 }}
-              >
-                <h3>storeId: {storeId}</h3>
-                <List>
-                  <ListItem>
-                    <ListItemText primary={`name: ${secret.name}`} />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary={`secretType: ${secret.secretType}`}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary={`usersWithRetrievePermissions: ${secret.usersWithRetrievePermissions?.join(', ')}`}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary={`usersWithUpdatePermissions: ${secret.usersWithUpdatePermissions?.join(', ')}`}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary={`usersWithDeletePermissions: ${secret.usersWithDeletePermissions?.join(', ')}`}
-                    />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText
-                      primary={`usersWithComputePermissions: ${secret.usersWithComputePermissions?.join(', ')}`}
-                    />
-                  </ListItem>
-                </List>
-              </Paper>
-            );
-          })}
-        </>
-      )} */}
-      <br />
-      <br />
-      <GenerateUserKey setUserKey={setUserKey} />
+      <ConnectionSection
+        client={client}
+        userkey={userkey}
+        setUserKey={setUserKey}
+        setClient={setClient}
+      />
 
-      {userkey && <CreateClient userKey={userkey} setClient={setClient} />}
-
-      <br />
-      <br />
       {client && (
-        <>
-          <h2>Store SecretBlob</h2>
-          <StoreSecretForm
-            secretName={''}
-            onNewStoredSecret={handleNewStoredSecret}
-            nillionClient={client}
-            secretType="SecretBlob"
-            isLoading={false}
-            customSecretName
-            itemName="secret blob"
-          />
+        <Box py={4} mb={8}>
+          <h1>Perform a Nillion Operation</h1>
+          <Tabs
+            value={tabIndex}
+            onChange={handleTabChange}
+            aria-label="Nillion operation tabs"
+          >
+            <Tab label="Store Secret Blob" />
+            <Tab label="Store Secret Integer" />
+            <Tab label="Retrieve Secret" />
+            <Tab label="Update Secret" />
+            <Tab label="Store Program" />
+          </Tabs>
 
-          <br />
-          <br />
-          <h2>Store SecretInteger</h2>
-          <StoreSecretForm
-            secretName={''}
-            onNewStoredSecret={handleNewStoredSecret}
-            nillionClient={client}
-            secretType="SecretInteger"
-            isLoading={false}
-            customSecretName
-            itemName="secret integer"
-          />
+          <Box hidden={tabIndex !== 0} py={3}>
+            <Typography component="div">
+              <h2>Store SecretBlob</h2>
+              <StoreSecretForm
+                secretName={''}
+                onNewStoredSecret={handleNewStoredSecret}
+                nillionClient={client}
+                secretType="SecretBlob"
+                isLoading={false}
+                customSecretName
+                itemName="secret blob"
+              />
+            </Typography>
+          </Box>
 
-          <br />
-          <br />
-          <h2>Retrieve Secret</h2>
-          <RetrieveSecret nillionClient={client} />
+          <Box hidden={tabIndex !== 1} py={3}>
+            <Typography component="div">
+              <h2>Store SecretInteger</h2>
+              <StoreSecretForm
+                secretName={''}
+                onNewStoredSecret={handleNewStoredSecret}
+                nillionClient={client}
+                secretType="SecretInteger"
+                isLoading={false}
+                customSecretName
+                itemName="secret integer"
+              />
+            </Typography>
+          </Box>
 
-          <br />
-          <br />
-          <h2>Update Secret</h2>
-          <UpdateSecretForm
-            secretName={''}
-            onNewStoredSecret={handleNewStoredSecret}
-            nillionClient={client}
-            customSecretName
-            itemName=""
-          />
+          <Box hidden={tabIndex !== 2} py={3}>
+            <Typography component="div">
+              <h2>Retrieve Secret</h2>
+              <RetrieveSecret nillionClient={client} />
+            </Typography>
+          </Box>
 
-          <br />
-          <br />
-          <h2>Store Program</h2>
-          <StoreProgram
-            nillionClient={client}
-            defaultProgram="addition_simple"
-          />
-        </>
+          <Box hidden={tabIndex !== 3} py={3}>
+            <Typography component="div">
+              <h2>Update Secret</h2>
+              <UpdateSecretForm
+                secretName={''}
+                onNewStoredSecret={handleNewStoredSecret}
+                nillionClient={client}
+                customSecretName
+                itemName=""
+              />
+            </Typography>
+          </Box>
+
+          <Box hidden={tabIndex !== 4} py={3}>
+            <Typography component="div">
+              <h2>Store Program</h2>
+              <StoreProgram
+                nillionClient={client}
+                defaultProgram="addition_simple"
+              />
+            </Typography>
+          </Box>
+        </Box>
       )}
     </Container>
   );

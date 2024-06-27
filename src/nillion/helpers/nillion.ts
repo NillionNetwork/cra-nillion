@@ -1,7 +1,7 @@
 import { DirectSecp256k1Wallet, Registry } from '@cosmjs/proto-signing';
 import { GasPrice, SigningStargateClient } from '@cosmjs/stargate';
-import { PaymentReceipt, NillionClient } from '@nillion/client';
-import { MsgPayFor, typeUrl } from '@nillion/client/proto';
+import { PaymentReceipt } from '@nillion/client-web';
+import { MsgPayFor, typeUrl } from '@nillion/client-web/proto';
 
 export interface NillionEnvConfig {
   clusterId: string;
@@ -62,8 +62,6 @@ export async function payWithWalletFromPrivateKey(
     resource: quote.nonce,
     amount: [{ denom, amount: quote.cost.total }],
   };
-
-  console.log(payload);
 
   const result = await nilChainClient.signAndBroadcast(
     from,

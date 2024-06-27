@@ -1,24 +1,36 @@
-import React, { useState } from 'react';
-import * as nillion from '@nillion/client';
+import React, { useState, useEffect } from 'react';
+import * as nillion from '@nillion/client-web';
 import { getQuote } from '../helpers/getQuote';
 import {
   createNilChainClientAndWalletFromPrivateKey,
   payWithWalletFromPrivateKey,
 } from '../helpers/nillion';
 import { storeProgram } from '../helpers/storeProgram';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { List, ListItem, ListItemText } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  List,
+  ListItem,
+  ListItemText,
+  MenuItem,
+  Select,
+} from '@mui/material';
+import PayButton from './PayButton';
+import { transformNadaProgramToUint8Array } from '../helpers/transformNadaProgramToUint8Array';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 interface StoreProgramProps {
   nillionClient: nillion.NillionClient;
   defaultProgram?: string;
   onNewStoredProgram?: (data: any) => void;
 }
+
+SyntaxHighlighter.registerLanguage('python', python);
 
 const StoreProgram: React.FC<StoreProgramProps> = ({
   nillionClient,
@@ -30,6 +42,18 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
   const [selectedProgram, setSelectedProgram] =
     useState<string>(defaultProgram);
   const [programId, setProgramId] = useState<string | null>(null);
+  const [loadingQuote, setLoadingQuote] = useState(false);
+  const [loadingPayment, setLoadingPayment] = useState(false);
+  const [programCode, setProgramCode] = useState<string | null>(null);
+
+  const reset = () => {
+    setQuote(null);
+    setPaymentReceipt(null);
+    setSelectedProgram(defaultProgram);
+    setProgramId(null);
+    setLoadingPayment(false);
+    setProgramCode(null);
+  };
 
   // programs need to have .nada.bin files in public/programs/*
   const selectProgram = [
@@ -37,30 +61,45 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
     { name: 'subtraction_simple.nada.bin', value: 'subtraction_simple' },
   ];
 
+  useEffect(() => {
+    const fetchProgramCode = async () => {
+      if (selectedProgram) {
+        const response = await fetch(`./programs/${selectedProgram}.py`);
+        const text = await response.text();
+        setProgramCode(text);
+      }
+    };
+
+    fetchProgramCode();
+  }, [selectedProgram]);
+
   const handleGetQuoteSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (nillionClient && selectedProgram) {
-      const operation = nillion.Operation.store_program();
+      setLoadingQuote(true);
+      const programBinary = await transformNadaProgramToUint8Array(
+        `./programs/${selectedProgram}.nada.bin`
+      );
+      const operation = nillion.Operation.store_program(programBinary);
 
       const quote = await getQuote({
         client: nillionClient,
         operation,
       });
 
-      console.log(quote);
-
       setQuote({
         quote,
         quoteJson: quote.toJSON(),
         operation,
       });
+      setLoadingQuote(false);
     }
   };
 
   const handlePayAndRetrieve = async () => {
-    console.log('paying...');
     if (nillionClient && quote?.operation) {
+      setLoadingPayment(true);
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
@@ -71,7 +110,6 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
       );
 
       setPaymentReceipt(paymentReceipt);
-      console.log(paymentReceipt);
       const program_id = await storeProgram({
         nillionClient,
         receipt: paymentReceipt,
@@ -82,6 +120,7 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
       if (onNewStoredProgram) {
         onNewStoredProgram({ program_id });
       }
+      setLoadingPayment(false);
     }
   };
 
@@ -111,8 +150,27 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
           ))}
         </Select>
       </FormControl>
-      <Button type="submit" variant="contained" color="primary">
-        Get quote
+
+      {programCode && (
+        <Box my={2} p={2} bgcolor="#f5f5f5" borderRadius={4}>
+          <SyntaxHighlighter language="python" style={docco}>
+            {programCode}
+          </SyntaxHighlighter>
+        </Box>
+      )}
+
+      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+        Get Quote{' '}
+        {loadingQuote && (
+          <CircularProgress
+            size="14px"
+            color="inherit"
+            style={{ marginLeft: '10px' }}
+          />
+        )}
+      </Button>
+      <Button onClick={reset} sx={{ mt: 2, ml: 2 }}>
+        Reset
       </Button>
       {quote && (
         <Box mt={2}>
@@ -137,20 +195,15 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
               />
             </ListItem>
           </List>
-          <Button
-            variant="contained"
-            color="primary"
+          <PayButton
+            buttonText="Pay and store program"
             onClick={handlePayAndRetrieve}
-          >
-            Pay and store program
-          </Button>
-          {programId && (
-            <List>
-              <ListItem>
-                <ListItemText primary={`program id: ${programId}`} />
-              </ListItem>
-            </List>
-          )}
+            loading={loadingPayment}
+            displayList={!!programId}
+            listItems={
+              programId ? [{ primary: `program id: ${programId}` }] : []
+            }
+          />
         </Box>
       )}
     </Box>

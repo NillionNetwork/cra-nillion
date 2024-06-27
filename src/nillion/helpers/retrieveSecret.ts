@@ -1,4 +1,4 @@
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
 import { config } from './nillion';
 
 interface RetrieveSecret {
@@ -13,13 +13,12 @@ export async function retrieveSecret({
   secret_name,
   receipt,
 }: RetrieveSecret) {
-  const retrieved = await nillionClient.retrieve_secret(
+  const retrieved = await nillionClient.retrieve_value(
     config.clusterId,
     store_id,
     secret_name,
     receipt
   );
-  console.log(retrieved);
 
   try {
     const intValue = retrieved.to_integer();

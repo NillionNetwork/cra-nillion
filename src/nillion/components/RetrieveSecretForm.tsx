@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
 import { getQuote } from '../helpers/getQuote';
 import {
   createNilChainClientAndWalletFromPrivateKey,
   payWithWalletFromPrivateKey,
 } from '../helpers/nillion';
 import { retrieveSecret } from '../helpers/retrieveSecret';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import { List, ListItem, ListItemText } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  List,
+  ListItem,
+  ListItemText,
+  TextField,
+} from '@mui/material';
+import PayButton from './PayButton';
 
 interface RetrieveSecretProps {
   nillionClient: nillion.NillionClient;
@@ -23,12 +29,24 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
   const [quote, setQuote] = useState<any | null>(null);
   const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
   const [retrievedValue, setRetrievedValue] = useState<string | null>(null);
+  const [loadingQuote, setLoadingQuote] = useState(false);
+  const [loadingPayment, setLoadingPayment] = useState(false);
+
+  const reset = () => {
+    setStoreId('');
+    setSecretName('');
+    setQuote(null);
+    setPaymentReceipt(null);
+    setRetrievedValue(null);
+    setLoadingPayment(false);
+  };
 
   const handleGetQuoteSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     if (nillionClient) {
-      const operation = nillion.Operation.retrieve_secret();
+      setLoadingQuote(true);
+      const operation = nillion.Operation.retrieve_value();
 
       const quote = await getQuote({
         client: nillionClient,
@@ -40,11 +58,13 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
         quoteJson: quote.toJSON(),
         operation,
       });
+      setLoadingQuote(false);
     }
   };
 
   const handlePayAndRetrieve = async () => {
     if (nillionClient && quote?.operation) {
+      setLoadingPayment(true);
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
@@ -62,6 +82,7 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
         receipt: paymentReceipt,
       });
       setRetrievedValue(value.toString());
+      setLoadingPayment(false);
     }
   };
 
@@ -85,8 +106,18 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
         variant="outlined"
         margin="normal"
       />
-      <Button type="submit" variant="contained" color="primary">
-        Get quote
+      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+        Get Quote{' '}
+        {loadingQuote && (
+          <CircularProgress
+            size="14px"
+            color="inherit"
+            style={{ marginLeft: '10px' }}
+          />
+        )}
+      </Button>
+      <Button onClick={reset} sx={{ mt: 2, ml: 2 }}>
+        Reset
       </Button>
       {quote && (
         <Box mt={2}>
@@ -111,20 +142,17 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
               />
             </ListItem>
           </List>
-          <Button
-            variant="contained"
-            color="primary"
+          <PayButton
+            buttonText="Pay and retrieve secret"
             onClick={handlePayAndRetrieve}
-          >
-            Pay and retrieve secret
-          </Button>
-          {retrievedValue && (
-            <List>
-              <ListItem>
-                <ListItemText primary={`Retrieved value: ${retrievedValue}`} />
-              </ListItem>
-            </List>
-          )}
+            loading={loadingPayment}
+            displayList={!!retrievedValue}
+            listItems={
+              retrievedValue
+                ? [{ primary: `Retrieved value: ${retrievedValue}` }]
+                : []
+            }
+          />
         </Box>
       )}
     </Box>

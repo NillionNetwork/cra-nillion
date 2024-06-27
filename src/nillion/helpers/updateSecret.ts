@@ -1,10 +1,10 @@
 import { config } from './nillion';
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
 
 interface UpdateSecret {
   nillionClient: nillion.NillionClient;
-  nillionSecrets: nillion.Secrets;
-  storeSecretsReceipt: nillion.PaymentReceipt;
+  nillionSecrets: nillion.NadaValues;
+  updateSecretsReceipt: nillion.PaymentReceipt;
   storeId: string;
 }
 
@@ -12,24 +12,21 @@ interface UpdateSecret {
 export async function updateSecret({
   nillionClient,
   nillionSecrets,
-  storeSecretsReceipt,
+  updateSecretsReceipt,
   storeId,
 }: UpdateSecret): Promise<any> {
   try {
     const user_id = nillionClient.user_id;
 
-    const result = await nillionClient.update_secrets(
+    const result = await nillionClient.update_values(
       config.clusterId,
       storeId,
       nillionSecrets,
-      storeSecretsReceipt
+      updateSecretsReceipt
     );
-
-    console.log(result, storeId);
 
     return storeId;
   } catch (error) {
-    console.log(error);
-    return 'error';
+    return error;
   }
 }

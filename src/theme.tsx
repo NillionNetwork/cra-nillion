@@ -2,6 +2,9 @@ import { createTheme } from '@mui/material/styles';
 
 export const theme = createTheme({
   palette: {
+    primary: {
+      main: '#0021F5',
+    },
     secondary: {
       main: '#fafafa',
     },
@@ -10,7 +13,7 @@ export const theme = createTheme({
     MuiListItem: {
       styleOverrides: {
         root: {
-          padding: '8px 16px', // Custom padding
+          padding: '4px 16px', // Custom padding
           backgroundColor: '#f5f5f5', // Custom background color
           '&:hover': {
             backgroundColor: '#e0e0e0', // Custom hover background color
@@ -24,15 +27,22 @@ export const theme = createTheme({
         },
       },
     },
+    MuiFormControl: {
+      styleOverrides: {
+        root: {
+          margin: '4px 0',
+        },
+      },
+    },
     MuiTextField: {
       styleOverrides: {
         root: {
           '& .MuiInputBase-root': {
-            margin: '4px 0', // Adjust margin as needed
-            padding: '4px', // Adjust padding as needed
+            margin: '4px 0',
+            padding: '4px',
           },
           '& .MuiInputBase-input': {
-            padding: '4px 8px', // Adjust inner input padding as needed
+            padding: '8px',
           },
         },
       },

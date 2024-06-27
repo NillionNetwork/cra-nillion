@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import * as nillion from '@nillion/client';
-import { NillionClient } from '@nillion/client';
+import * as nillion from '@nillion/client-web';
+import { NillionClient } from '@nillion/client-web';
 import { storeSecrets } from '../helpers/storeSecrets';
 import { getQuote } from '../helpers/getQuote';
 import {
@@ -10,7 +10,8 @@ import {
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
-import { List, ListItem, ListItemText } from '@mui/material';
+import { CircularProgress, List, ListItem, ListItemText } from '@mui/material';
+import PayButton from './PayButton';
 
 type SecretDataType = 'SecretBlob' | 'SecretInteger';
 
@@ -46,7 +47,11 @@ const SecretForm: React.FC<SecretFormProps> = ({
   const [quote, setQuote] = useState<any | null>(null);
   const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
   const [storedSecrets, setStoredSecrets] = useState<any | null>([]);
-  const [loading, setLoading] = useState(isLoading);
+  const lastStoredSecret = storedSecrets.length
+    ? storedSecrets[storedSecrets.length - 1]
+    : null;
+  const [loadingQuote, setLoadingQuote] = useState(false);
+  const [loadingPayment, setLoadingPayment] = useState(isLoading);
   const [
     permissionedUserIdForRetrieveSecret,
     setPermissionedUserIdForRetrieveSecret,
@@ -70,30 +75,38 @@ const SecretForm: React.FC<SecretFormProps> = ({
   const reset = () => {
     setSecretNameFromForm(secretName);
     setSecret('');
+    setQuote(null);
+    setPaymentReceipt(null);
     setPermissionedUserIdForRetrieveSecret('');
     setPermissionedUserIdForUpdateSecret('');
     setPermissionedUserIdForDeleteSecret('');
     setPermissionedUserIdForComputeSecret(defaultUserWithComputePermissions);
     setProgramIdForComputePermissions(defaultProgramIdForComputePermissions);
-    setSecret('');
-    setQuote(null);
   };
 
   const handleGetQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (nillionClient) {
-      const secretForQuote = new nillion.Secrets();
+      setLoadingQuote(true);
+      const secretForQuote = new nillion.NadaValues();
 
       if (secretType === 'SecretBlob') {
         const byteArraySecret = new TextEncoder().encode(secret);
-        const newSecretBlob = nillion.Secret.new_blob(byteArraySecret);
+        const newSecretBlob =
+          nillion.NadaValue.new_secret_blob(byteArraySecret);
         secretForQuote.insert(secretNameFromForm, newSecretBlob);
       } else {
-        const newSecretInteger = nillion.Secret.new_integer(secret.toString());
+        const newSecretInteger = nillion.NadaValue.new_secret_integer(
+          secret.toString()
+        );
         secretForQuote.insert(secretNameFromForm, newSecretInteger);
       }
 
-      const storeOperation = nillion.Operation.store_secrets(secretForQuote);
+      const ttl_days = 30;
+      const storeOperation = nillion.Operation.store_values(
+        secretForQuote,
+        ttl_days
+      );
 
       const quote = await getQuote({
         client: nillionClient,
@@ -107,11 +120,13 @@ const SecretForm: React.FC<SecretFormProps> = ({
         rawSecret: { name: secretNameFromForm, value: secret },
         operation: storeOperation,
       });
+      setLoadingQuote(false);
     }
   };
 
   const handlePayAndStore = async () => {
     if (nillionClient && quote?.operation) {
+      setLoadingPayment(true);
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
@@ -159,10 +174,11 @@ const SecretForm: React.FC<SecretFormProps> = ({
         return updatedStoredSecrets;
       });
       onNewStoredSecret(newStoredSecret);
+      setLoadingPayment(false);
     }
   };
 
-  return loading ? (
+  return isLoading ? (
     'Storing secret...'
   ) : (
     <Box component="form" onSubmit={handleGetQuoteSubmit} sx={{ mt: 2 }}>
@@ -193,85 +209,81 @@ const SecretForm: React.FC<SecretFormProps> = ({
       />
 
       {!hidePermissions && (
-        <Box sx={{ mt: 2 }}>
-          <TextField
-            label="Optional: Set a user id to grant retrieve permissions to another user"
-            value={permissionedUserIdForRetrieveSecret}
-            onChange={(e) =>
-              setPermissionedUserIdForRetrieveSecret(e.target.value)
-            }
-            disabled={isDisabled}
-            fullWidth
-            variant="outlined"
-            margin="normal"
-          />
-        </Box>
+        <TextField
+          label="Optional: Set a user id to grant retrieve permissions to another user"
+          value={permissionedUserIdForRetrieveSecret}
+          onChange={(e) =>
+            setPermissionedUserIdForRetrieveSecret(e.target.value)
+          }
+          disabled={isDisabled}
+          fullWidth
+          variant="outlined"
+          margin="normal"
+        />
       )}
 
       {!hidePermissions && (
-        <Box sx={{ mt: 2 }}>
-          <TextField
-            label="Optional: Set a user id to grant update permissions to another user"
-            value={permissionedUserIdForUpdateSecret}
-            onChange={(e) =>
-              setPermissionedUserIdForUpdateSecret(e.target.value)
-            }
-            disabled={isDisabled}
-            fullWidth
-            variant="outlined"
-            margin="normal"
-          />
-        </Box>
+        <TextField
+          label="Optional: Set a user id to grant update permissions to another user"
+          value={permissionedUserIdForUpdateSecret}
+          onChange={(e) => setPermissionedUserIdForUpdateSecret(e.target.value)}
+          disabled={isDisabled}
+          fullWidth
+          variant="outlined"
+          margin="normal"
+        />
       )}
 
       {!hidePermissions && (
-        <Box sx={{ mt: 2 }}>
-          <TextField
-            label="Optional: Set a user id to grant delete permissions to another user"
-            value={permissionedUserIdForDeleteSecret}
-            onChange={(e) =>
-              setPermissionedUserIdForDeleteSecret(e.target.value)
-            }
-            disabled={isDisabled}
-            fullWidth
-            variant="outlined"
-            margin="normal"
-          />
-        </Box>
+        <TextField
+          label="Optional: Set a user id to grant delete permissions to another user"
+          value={permissionedUserIdForDeleteSecret}
+          onChange={(e) => setPermissionedUserIdForDeleteSecret(e.target.value)}
+          disabled={isDisabled}
+          fullWidth
+          variant="outlined"
+          margin="normal"
+        />
       )}
 
       {!hidePermissions && secretType === 'SecretInteger' && (
-        <Box sx={{ mt: 2 }}>
-          <TextField
-            label="Optional: Set a user id to grant compute permissions to another user"
-            value={permissionedUserIdForComputeSecret}
-            onChange={(e) =>
-              setPermissionedUserIdForComputeSecret(e.target.value)
-            }
-            disabled={isDisabled}
-            fullWidth
-            variant="outlined"
-            margin="normal"
-          />
-        </Box>
+        <TextField
+          label="Optional: Set a user id to grant compute permissions to another user"
+          value={permissionedUserIdForComputeSecret}
+          onChange={(e) =>
+            setPermissionedUserIdForComputeSecret(e.target.value)
+          }
+          disabled={isDisabled}
+          fullWidth
+          variant="outlined"
+          margin="normal"
+        />
       )}
 
       {!hidePermissions && secretType === 'SecretInteger' && (
-        <Box sx={{ mt: 2 }}>
-          <TextField
-            label="Optional: Set program id for compute permissions"
-            value={programIdForComputePermissions}
-            onChange={(e) => setProgramIdForComputePermissions(e.target.value)}
-            disabled={isDisabled}
-            fullWidth
-            variant="outlined"
-            margin="normal"
-          />
-        </Box>
+        <TextField
+          label="Optional: Set program id for compute permissions"
+          value={programIdForComputePermissions}
+          onChange={(e) => setProgramIdForComputePermissions(e.target.value)}
+          disabled={isDisabled}
+          fullWidth
+          variant="outlined"
+          margin="normal"
+        />
       )}
 
-      <Button type="submit" variant="contained" color="primary">
-        Get Quote
+      <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
+        Get Quote{' '}
+        {loadingQuote && (
+          <CircularProgress
+            size="14px"
+            color="inherit"
+            style={{ marginLeft: '10px' }}
+          />
+        )}
+      </Button>
+      <Button onClick={reset} sx={{ mt: 2, ml: 2 }}>
+        Reset
       </Button>
       {quote && (
         <Box mt={2}>
@@ -296,28 +308,20 @@ const SecretForm: React.FC<SecretFormProps> = ({
               />
             </ListItem>
           </List>
-          <Button
-            variant="contained"
-            color="primary"
+          <PayButton
+            buttonText="Pay and store secret"
             onClick={handlePayAndStore}
-          >
-            Pay and store secret
-          </Button>
-          {!!storedSecrets.length &&
-            storedSecrets[storedSecrets.length - 1].storeId && (
-              <List>
-                <ListItem>
-                  <ListItemText
-                    primary={`store id: ${storedSecrets[storedSecrets.length - 1].storeId}`}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary={`secret name: ${storedSecrets[storedSecrets.length - 1].name}`}
-                  />
-                </ListItem>
-              </List>
-            )}
+            loading={loadingPayment}
+            displayList={!!storedSecrets.length && !!lastStoredSecret?.storeId}
+            listItems={
+              lastStoredSecret
+                ? [
+                    { primary: `store id: ${lastStoredSecret.storeId}` },
+                    { primary: `secret name: ${lastStoredSecret.name}` },
+                  ]
+                : []
+            }
+          />
         </Box>
       )}
     </Box>

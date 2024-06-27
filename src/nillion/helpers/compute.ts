@@ -1,5 +1,5 @@
 import { config } from './nillion';
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
 
 interface ComputeProgram {
   nillionClient: nillion.NillionClient;
@@ -9,6 +9,7 @@ interface ComputeProgram {
   inputParties: ComputeParty[];
   outputParties: ComputeParty[];
   outputName: string;
+  additionalComputeValues: nillion.NadaValues;
 }
 
 interface ComputeParty {
@@ -24,6 +25,7 @@ export async function computeProgram({
   inputParties,
   outputParties,
   outputName,
+  additionalComputeValues,
 }: ComputeProgram): Promise<any> {
   await nillion.default();
   let program_bindings = new nillion.ProgramBindings(programId);
@@ -36,15 +38,11 @@ export async function computeProgram({
   });
 
   try {
-    const compute_time_secrets = new nillion.Secrets();
-    const public_variables = new nillion.PublicVariables();
-
     const compute_result_uuid = await nillionClient.compute(
       config.clusterId,
       program_bindings,
       storeIds,
-      compute_time_secrets,
-      public_variables,
+      additionalComputeValues,
       receipt
     );
 
@@ -53,7 +51,6 @@ export async function computeProgram({
     const result = compute_result[outputName].toString();
     return result;
   } catch (error) {
-    console.log(error);
-    return 'error';
+    return error;
   }
 }

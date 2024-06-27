@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import GenerateUserKey from './nillion/components/GenerateUserKey';
 import CreateClient from './nillion/components/CreateClient';
-import * as nillion from '@nillion/client';
-import { NillionClient, Secrets } from '@nillion/client';
+import * as nillion from '@nillion/client-web';
+
+import { NillionClient, NadaValues } from '@nillion/client-web';
 import StoreSecretForm from './nillion/components/StoreSecretForm';
-import { config } from './nillion/helpers/nillion';
 import StoreProgram from './nillion/components/StoreProgramForm';
 import ComputeForm from './nillion/components/ComputeForm';
 import ConnectionInfo from './nillion/components/ConnectionInfo';
@@ -20,18 +20,16 @@ export default function Main() {
   const [storeId_my_int1, setStoreId_my_int1] = useState<string | null>(null);
   const [storeId_my_int2, setStoreId_my_int2] = useState<string | null>(null);
   const [programId, setProgramId] = useState<string | null>(null);
-  const [computeTimeSecrets, setComputeTimeSecrets] = useState<Secrets | null>(
-    null
-  );
+  const [additionalComputeValues, setAdditionalComputeValues] =
+    useState<NadaValues | null>(null);
   const [computeResult, setComputeResult] = useState<string | null>(null);
 
   useEffect(() => {
     if (userkey && client) {
       setUserId(client.user_id);
       setPartyId(client.party_id);
-      const computeSecrets = new nillion.Secrets();
-      console.log(computeSecrets);
-      setComputeTimeSecrets(computeSecrets);
+      const additionalComputeValues = new nillion.NadaValues();
+      setAdditionalComputeValues(additionalComputeValues);
     }
   }, [userkey, client]);
 
@@ -97,11 +95,11 @@ export default function Main() {
         storeId_my_int1 &&
         storeId_my_int2 &&
         partyId &&
-        computeTimeSecrets && (
+        additionalComputeValues && (
           <ComputeForm
             nillionClient={client}
             programId={programId}
-            computeTimeSecrets={computeTimeSecrets}
+            additionalComputeValues={additionalComputeValues}
             storeIds={[storeId_my_int1, storeId_my_int2]}
             inputParties={[{ partyName, partyId }]}
             outputParties={[{ partyName, partyId }]}

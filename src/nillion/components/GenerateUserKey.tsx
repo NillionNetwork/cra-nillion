@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';

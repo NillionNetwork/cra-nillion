@@ -1,5 +1,5 @@
-import { NillionClient } from '@nillion/client';
-import React, { useState } from 'react';
+import { NillionClient } from '@nillion/client-web';
+import React, { useState, useEffect } from 'react';
 import { config } from '../helpers/nillion';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -13,42 +13,28 @@ interface ConnectionInfoProps {
 }
 
 const ConnectionInfo: React.FC<ConnectionInfoProps> = ({ client, userkey }) => {
-  const [isVisible, setIsVisible] = useState(true);
-
-  const toggleVisibility = () => {
-    setIsVisible(!isVisible);
-  };
-
   return (
-    <Box my={2}>
-      <h3>NillionClient is {client ? 'connected 🟢' : 'not connected 🔴'}</h3>
-      {isVisible && (
-        <Box mb={2}>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary={`Cluster ID: ${config.clusterId || 'Not set'}`}
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText primary={`User Key: ${userkey || 'Not set'}`} />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary={`User ID: ${client?.user_id || 'Not set'}`}
-              />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary={`Party ID: ${client?.party_id || 'Not set'}`}
-              />
-            </ListItem>
-          </List>
-        </Box>
-      )}
-      <Button variant="contained" color="secondary" onClick={toggleVisibility}>
-        {isVisible ? 'Hide' : 'Show'} Connection Info
-      </Button>
+    <Box mb={2}>
+      <List>
+        <ListItem>
+          <ListItemText
+            primary={`Cluster ID: ${config.clusterId || 'Not set - update your .env file with Nillion network values'}`}
+          />
+        </ListItem>
+        <ListItem>
+          <ListItemText
+            primary={`User Key: ${userkey || 'Not set - generate a Nillion userkey then connect with the userkey'}`}
+          />
+        </ListItem>
+        <ListItem>
+          <ListItemText primary={`User ID: ${client?.user_id || 'Not set'}`} />
+        </ListItem>
+        <ListItem>
+          <ListItemText
+            primary={`Party ID: ${client?.party_id || 'Not set'}`}
+          />
+        </ListItem>
+      </List>
     </Box>
   );
 };

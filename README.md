@@ -6,10 +6,10 @@ Video setup guide: https://www.loom.com/share/c4196fca27474c2c8567a3a87e036217?s
 
 ## Run nillion-devnet
 
-Re-install the `nightly-v2024-06-27-7db213f55` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
+Install the `nightly-v2024-06-27-7db213f55` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
 
 ```
-nilup install nightly-v2024-06-27-7db213f55 --browser-client
+nilup install nightly-v2024-06-27-7db213f55
 nilup use nightly-v2024-06-27-7db213f55
 ```
 
