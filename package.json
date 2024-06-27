@@ -10,6 +10,7 @@
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
     "@nillion/client": "file:nillion_js_client.tgz",
+    "@nillion/client-web": "file:npm-nillion-client-web-nightly-v2024-06-27-7db213f55.tgz",
     "@tailwindcss/forms": "^0.5.7",
     "@types/react-router-dom": "^5.3.3",
     "buffer": "^6.0.3",

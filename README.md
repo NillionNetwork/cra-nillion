@@ -6,11 +6,11 @@ Video setup guide: https://www.loom.com/share/c4196fca27474c2c8567a3a87e036217?s
 
 ## Run nillion-devnet
 
-Re-install the `latest-experimental` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
+Re-install the `nightly-v2024-06-27-7db213f55` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
 
 ```
-nilup install latest-experimental
-nilup use latest-experimental
+nilup install nightly-v2024-06-27-7db213f55 --browser-client
+nilup use nightly-v2024-06-27-7db213f55
 ```
 
 Run the devnet using any seed (the example uses "my-seed") so the cluster id, websockets, and other environment variables stay constant even when you restart nillion-devnet.
@@ -45,7 +45,6 @@ vim "/Users/steph/Library/Application Support/nillion.nillion/nillion-devnet.env
 ```
 
 This file has the nillion-devnet generated values for cluster id, websocket, json rpc, and private key. You'll need to put these in your local .env in one of the next steps so that your cra-nillion demo app connects to the nillion-devnet.
-
 
 ## Clone this repo
 
