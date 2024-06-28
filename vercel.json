@@ -11,7 +11,7 @@
   ],
   "rewrites": [
     {
-      "source": "/nilchain-proxy/(.*)",
+      "source": "/nilchain-proxy",
       "destination": "http://65.109.222.111:26657"
     }
   ],
