@@ -1,6 +1,6 @@
 # Nillion Operations and Blind Compute Demo
 
-This is a demo of the JavaScript Nillion Client working with payments.
+This is a demo of the JavaScript Nillion Client working with payments connected to the testnet.
 
 Video setup guide: https://www.loom.com/share/c4196fca27474c2c8567a3a87e036217?sid=c73f751b-465b-433a-ae0f-976616d8935e
 
