@@ -19,6 +19,13 @@ module.exports = {
       overlay: false,
     },
     historyApiFallback: true, // enable browser routing
+    proxy: [
+      {
+        context: ['/nilchain-proxy'],
+        target: process.env.REACT_APP_NILLION_NILCHAIN_JSON_RPC,
+        pathRewrite: { '^/nilchain-proxy': '' },
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
