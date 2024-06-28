@@ -47,6 +47,6 @@
     }
   ],
   "env": {
-    "REACT_APP_API_BASE_PATH": "https://cra-nillion-git-testnet-nillion.vercel.app/"
+    "REACT_APP_API_BASE_PATH": "/nilchain-proxy"
   }
 }
