@@ -16,7 +16,8 @@ export const config: NillionEnvConfig = {
   clusterId: process.env.REACT_APP_NILLION_CLUSTER_ID || '',
   bootnodes: [process.env.REACT_APP_NILLION_BOOTNODE_WEBSOCKET || ''],
   chain: {
-    endpoint: `${window.location.href}nilchain-proxy`, // see webpack.config.js proxy
+    // REACT_APP_API_BASE_PATH is set in vercel
+    endpoint: `${process.env.REACT_APP_API_BASE_PATH || window.location.href}nilchain-proxy`, // see webpack.config.js proxy
     keys: [process.env.REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY || ''],
   },
 };
