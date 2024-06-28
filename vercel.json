@@ -9,6 +9,16 @@
       }
     }
   ],
+  "routes": [
+    {
+      "src": "/nilchain-proxy/(.*)",
+      "dest": "/nilchain-proxy/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
   "rewrites": [
     {
       "source": "/nilchain-proxy/(.*)",
