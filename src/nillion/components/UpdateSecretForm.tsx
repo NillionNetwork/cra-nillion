@@ -59,6 +59,10 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
     setSecretStoreId('');
     setSecret('');
     setQuote(null);
+    setPaymentReceipt(null);
+    setStoredSecrets(null);
+    setLoadingQuote(false);
+    setLoadingPayment(false);
   };
 
   const handleGetQuoteSubmit = async (e: React.FormEvent) => {
