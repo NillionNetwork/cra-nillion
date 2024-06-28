@@ -22,7 +22,7 @@ export const config: NillionEnvConfig = {
   bootnodes: [process.env.REACT_APP_NILLION_BOOTNODE_WEBSOCKET || ''],
   chain: {
     chainId: process.env.REACT_APP_NILLION_NILCHAIN_CHAIN_ID || '',
-    endpoint: process.env.REACT_APP_NILLION_NILCHAIN_JSON_RPC || '',
+    endpoint: `${window.location.origin}/nilchain-proxy`, // see webpack.config.js proxy
     keys: [process.env.REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY || ''],
     chainInfo: {
       rpc: 'http://127.0.0.1:48102',
@@ -92,7 +92,11 @@ export async function createNilChainClientAndWalletFromPrivateKey(): Promise<
 
   const options = {
     registry,
+<<<<<<< HEAD
     gasPrice: GasPrice.fromString('0unil'),
+=======
+    gasPrice: GasPrice.fromString('0.0unil'),
+>>>>>>> testnet
   };
 
   const client = await SigningStargateClient.connectWithSigner(

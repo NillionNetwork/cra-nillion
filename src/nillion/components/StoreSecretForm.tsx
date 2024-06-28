@@ -82,6 +82,9 @@ const SecretForm: React.FC<SecretFormProps> = ({
     setPermissionedUserIdForDeleteSecret('');
     setPermissionedUserIdForComputeSecret(defaultUserWithComputePermissions);
     setProgramIdForComputePermissions(defaultProgramIdForComputePermissions);
+    setStoredSecrets(null);
+    setLoadingQuote(false);
+    setLoadingPayment(false);
   };
 
   const handleGetQuoteSubmit = async (e: React.FormEvent) => {

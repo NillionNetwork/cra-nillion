@@ -38,6 +38,7 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
     setQuote(null);
     setPaymentReceipt(null);
     setRetrievedValue(null);
+    setLoadingQuote(false);
     setLoadingPayment(false);
   };
 

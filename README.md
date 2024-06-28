@@ -1,8 +1,11 @@
 # Nillion Operations and Blind Compute Demo
 
-This is a demo of the JavaScript Nillion Client working with payments.
+This is a demo of the JavaScript Nillion Client working with payments connected to the testnet.
 
-Video setup guide: https://www.loom.com/share/c4196fca27474c2c8567a3a87e036217?sid=c73f751b-465b-433a-ae0f-976616d8935e
+Notes
+
+- This uses a proxy /nilchain-proxy set up in the webpack that targets the json rpc from your .env file
+- A Nillion config is in the nillion.ts file. This config reads environment variables from your .env file, which can either point to Testnet or nillion-devnet values
 
 ## Run nillion-devnet
 

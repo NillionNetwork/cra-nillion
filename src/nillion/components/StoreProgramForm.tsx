@@ -51,8 +51,9 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
     setPaymentReceipt(null);
     setSelectedProgram(defaultProgram);
     setProgramId(null);
-    setLoadingPayment(false);
     setProgramCode(null);
+    setLoadingQuote(false);
+    setLoadingPayment(false);
   };
 
   // programs need to have .nada.bin files in public/programs/*
@@ -195,7 +196,6 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
               />
             </ListItem>
           </List>
-
           <PayButton
             buttonText="Pay and store program"
             onClick={handlePayAndStoreProgram}
