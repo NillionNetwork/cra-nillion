@@ -148,7 +148,12 @@ const ComputeComponent: React.FC<ComputeProgramProps> = ({
             displayList={!!computeResult}
             listItems={
               computeResult
-                ? [{ primary: `compute result: ${computeResult}` }]
+                ? [
+                    {
+                      displayText: `compute result: ${computeResult}`,
+                      copyText: computeResult,
+                    },
+                  ]
                 : []
             }
           />

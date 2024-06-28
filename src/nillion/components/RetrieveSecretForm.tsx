@@ -142,14 +142,20 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
               />
             </ListItem>
           </List>
+
           <PayButton
-            buttonText="Pay and retrieve secret"
+            buttonText="Pay and retrieve"
             onClick={handlePayAndRetrieve}
             loading={loadingPayment}
             displayList={!!retrievedValue}
             listItems={
               retrievedValue
-                ? [{ primary: `Retrieved value: ${retrievedValue}` }]
+                ? [
+                    {
+                      displayText: `Retrieved value: ${retrievedValue}`,
+                      copyText: retrievedValue,
+                    },
+                  ]
                 : []
             }
           />

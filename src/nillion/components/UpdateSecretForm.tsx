@@ -242,8 +242,14 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
             listItems={
               lastStoredSecret
                 ? [
-                    { primary: `store id: ${lastStoredSecret.storeId}` },
-                    { primary: `secret name: ${lastStoredSecret.name}` },
+                    {
+                      displayText: `store id:${lastStoredSecret.storeId}`,
+                      copyText: lastStoredSecret.storeId,
+                    },
+                    {
+                      displayText: `secret name: ${lastStoredSecret.name}`,
+                      copyText: lastStoredSecret.name,
+                    },
                   ]
                 : []
             }

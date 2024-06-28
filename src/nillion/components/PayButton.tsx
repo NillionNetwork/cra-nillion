@@ -1,19 +1,13 @@
 import React from 'react';
-import {
-  Box,
-  Button,
-  CircularProgress,
-  List,
-  ListItem,
-  ListItemText,
-} from '@mui/material';
+import { Box, Button, CircularProgress, List, ListItem } from '@mui/material';
+import CopyableString from './CopyableString';
 
 interface PayButtonProps {
   buttonText: string;
   onClick: () => void;
   loading?: boolean;
   displayList?: boolean;
-  listItems?: { primary: string }[];
+  listItems?: { displayText: string; copyText: string }[];
 }
 
 const PayButton: React.FC<PayButtonProps> = ({
@@ -39,7 +33,11 @@ const PayButton: React.FC<PayButtonProps> = ({
         <List>
           {listItems.map((item, index) => (
             <ListItem key={index}>
-              <ListItemText primary={item.primary} />
+              <CopyableString
+                text={item.displayText}
+                copyText={item.copyText}
+                shouldTruncate={false}
+              />
             </ListItem>
           ))}
         </List>

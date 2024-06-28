@@ -97,7 +97,7 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
     }
   };
 
-  const handlePayAndRetrieve = async () => {
+  const handlePayAndStoreProgram = async () => {
     if (nillionClient && quote?.operation) {
       setLoadingPayment(true);
       const [nilChainClient, nilChainWallet] =
@@ -195,13 +195,21 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
               />
             </ListItem>
           </List>
+
           <PayButton
             buttonText="Pay and store program"
-            onClick={handlePayAndRetrieve}
+            onClick={handlePayAndStoreProgram}
             loading={loadingPayment}
             displayList={!!programId}
             listItems={
-              programId ? [{ primary: `program id: ${programId}` }] : []
+              programId
+                ? [
+                    {
+                      displayText: `program id: ${programId}`,
+                      copyText: programId,
+                    },
+                  ]
+                : []
             }
           />
         </Box>
