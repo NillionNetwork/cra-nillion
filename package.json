@@ -25,7 +25,7 @@
   },
   "scripts": {
     "start": "webpack serve --mode development",
-    "build": "webpack --mode development"
+    "build": "webpack --mode production"
   },
   "devDependencies": {
     "@babel/preset-react": "^7.24.7",
