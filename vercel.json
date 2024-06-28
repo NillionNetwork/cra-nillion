@@ -11,12 +11,8 @@
   ],
   "rewrites": [
     {
-      "source": "/nilchain-proxy",
-      "destination": "http://65.109.222.111:26657"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "source": "/nilchain-proxy/(.*)",
+      "destination": "http://65.109.222.111:26657/$1"
     }
   ],
   "headers": [
@@ -44,6 +40,15 @@
           "value": "X-Requested-With, content-type, Authorization"
         }
       ]
+    }
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html",
+      "statusCode": 200
     }
   ],
   "env": {
