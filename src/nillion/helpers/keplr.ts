@@ -1,4 +1,5 @@
-import { Window as KeplrWindow, Keplr } from "@keplr-wallet/types";
+import { Window as KeplrWindow, Keplr } from '@keplr-wallet/types';
+import { config } from './nillion';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -10,7 +11,7 @@ export async function getKeplr(): Promise<Keplr | undefined> {
     return window.keplr;
   }
 
-  if (document.readyState === "complete") {
+  if (document.readyState === 'complete') {
     return window.keplr;
   }
 
@@ -18,18 +19,26 @@ export async function getKeplr(): Promise<Keplr | undefined> {
     const documentStateChange = (event: Event) => {
       if (
         event.target &&
-        (event.target as Document).readyState === "complete"
+        (event.target as Document).readyState === 'complete'
       ) {
         resolve(window.keplr);
-        document.removeEventListener("readystatechange", documentStateChange);
+        document.removeEventListener('readystatechange', documentStateChange);
       }
     };
 
-    document.addEventListener("readystatechange", documentStateChange);
+    document.addEventListener('readystatechange', documentStateChange);
   });
 }
 
+const test = 'meow-nillion';
+
 export async function signerViaKeplr(chainId: string, keplr: Keplr) {
-  await keplr.enable(chainId);
-  return keplr.getOfflineSigner(chainId);
+  return await keplr
+    .experimentalSuggestChain(config.chain.chainInfo)
+    .then(async (res) => {
+      await keplr.enable(config.chain.chainId);
+      const signer = await keplr.getOfflineSigner(config.chain.chainId);
+      console.log('signer', signer);
+      return signer;
+    });
 }
