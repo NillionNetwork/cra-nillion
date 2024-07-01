@@ -1,6 +1,10 @@
-import React from 'react';
-import { Box, Button, CircularProgress, List, ListItem } from '@mui/material';
-import CopyableString from './CopyableString';
+import React from "react";
+import { Box, Button, CircularProgress, List, ListItem } from "@mui/material";
+import CopyableString from "./CopyableString";
+import {
+  createNilChainClientAndWalletFromKeplr,
+  payWithWallet,
+} from "../helpers/nillion";
 
 interface PayButtonProps {
   buttonText: string;
@@ -10,7 +14,7 @@ interface PayButtonProps {
   listItems?: { displayText: string; copyText: string }[];
 }
 
-const PayButton: React.FC<PayButtonProps> = ({
+export const PayButton: React.FC<PayButtonProps> = ({
   buttonText,
   onClick,
   loading = false,
@@ -25,7 +29,7 @@ const PayButton: React.FC<PayButtonProps> = ({
           <CircularProgress
             size="14px"
             color="inherit"
-            style={{ marginLeft: '10px' }}
+            style={{ marginLeft: "10px" }}
           />
         )}
       </Button>
@@ -46,4 +50,27 @@ const PayButton: React.FC<PayButtonProps> = ({
   );
 };
 
-export default PayButton;
+interface PayButtonKeplrProps {
+  quote: any;
+  loading?: boolean;
+  displayList?: boolean;
+  listItems?: { displayText: string; copyText: string }[];
+}
+
+function payWithKeplr(quote: any) {
+  return (): void => {
+    createNilChainClientAndWalletFromKeplr().then(([client, wallet]) => {
+      payWithWallet(client, wallet, { quote: quote });
+    });
+  };
+}
+
+export const PayButtonKeplr: React.FC<PayButtonKeplrProps> = (props) => {
+  return (
+    <PayButton
+      buttonText="Pay with Keplr"
+      onClick={payWithKeplr(props.quote)}
+      {...props}
+    />
+  );
+};

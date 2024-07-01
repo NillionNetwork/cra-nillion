@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import * as nillion from '@nillion/client-web';
-import { getQuote } from '../helpers/getQuote';
+import React, { useState } from "react";
+import * as nillion from "@nillion/client-web";
+import { getQuote } from "../helpers/getQuote";
 import {
   createNilChainClientAndWalletFromPrivateKey,
-  payWithWalletFromPrivateKey,
-} from '../helpers/nillion';
-import { computeProgram } from '../helpers/compute';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import { CircularProgress, List, ListItem, ListItemText } from '@mui/material';
-import PayButton from './PayButton';
+  payWithWallet,
+} from "../helpers/nillion";
+import { computeProgram } from "../helpers/compute";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import { CircularProgress, List, ListItem, ListItemText } from "@mui/material";
+import { PayButton } from "./PayButton";
 
 interface ComputeParty {
   partyName: string;
@@ -52,7 +52,7 @@ const ComputeComponent: React.FC<ComputeProgramProps> = ({
 
       const operation = nillion.Operation.compute(
         programId,
-        additionalComputeValues
+        additionalComputeValues,
       );
       const quote = await getQuote({
         client: nillionClient,
@@ -74,10 +74,10 @@ const ComputeComponent: React.FC<ComputeProgramProps> = ({
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
-      const paymentReceipt = await payWithWalletFromPrivateKey(
+      const paymentReceipt = await payWithWallet(
         nilChainClient,
         nilChainWallet,
-        quote
+        quote,
       );
 
       setPaymentReceipt(paymentReceipt);
@@ -109,12 +109,12 @@ const ComputeComponent: React.FC<ComputeProgramProps> = ({
       </p>
       <br />
       <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-        Get Quote{' '}
+        Get Quote{" "}
         {loadingQuote && (
           <CircularProgress
             size="14px"
             color="inherit"
-            style={{ marginLeft: '10px' }}
+            style={{ marginLeft: "10px" }}
           />
         )}
       </Button>

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import * as nillion from '@nillion/client-web';
-import { getQuote } from '../helpers/getQuote';
+import React, { useState, useEffect } from "react";
+import * as nillion from "@nillion/client-web";
+import { getQuote } from "../helpers/getQuote";
 import {
   createNilChainClientAndWalletFromPrivateKey,
-  payWithWalletFromPrivateKey,
-} from '../helpers/nillion';
-import { storeProgram } from '../helpers/storeProgram';
+  payWithWallet,
+} from "../helpers/nillion";
+import { storeProgram } from "../helpers/storeProgram";
 import {
   Box,
   Button,
@@ -17,12 +17,12 @@ import {
   ListItemText,
   MenuItem,
   Select,
-} from '@mui/material';
-import PayButton from './PayButton';
-import { transformNadaProgramToUint8Array } from '../helpers/transformNadaProgramToUint8Array';
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
-import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+} from "@mui/material";
+import { PayButton } from "./PayButton";
+import { transformNadaProgramToUint8Array } from "../helpers/transformNadaProgramToUint8Array";
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import python from "react-syntax-highlighter/dist/esm/languages/hljs/python";
+import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
 interface StoreProgramProps {
   nillionClient: nillion.NillionClient;
@@ -30,11 +30,11 @@ interface StoreProgramProps {
   onNewStoredProgram?: (data: any) => void;
 }
 
-SyntaxHighlighter.registerLanguage('python', python);
+SyntaxHighlighter.registerLanguage("python", python);
 
 const StoreProgram: React.FC<StoreProgramProps> = ({
   nillionClient,
-  defaultProgram = '',
+  defaultProgram = "",
   onNewStoredProgram,
 }: StoreProgramProps) => {
   const [quote, setQuote] = useState<any | null>(null);
@@ -57,8 +57,8 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
 
   // programs need to have .nada.bin files in public/programs/*
   const selectProgram = [
-    { name: 'addition_simple.nada.bin', value: 'addition_simple' },
-    { name: 'subtraction_simple.nada.bin', value: 'subtraction_simple' },
+    { name: "addition_simple.nada.bin", value: "addition_simple" },
+    { name: "subtraction_simple.nada.bin", value: "subtraction_simple" },
   ];
 
   useEffect(() => {
@@ -79,7 +79,7 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
     if (nillionClient && selectedProgram) {
       setLoadingQuote(true);
       const programBinary = await transformNadaProgramToUint8Array(
-        `./programs/${selectedProgram}.nada.bin`
+        `./programs/${selectedProgram}.nada.bin`,
       );
       const operation = nillion.Operation.store_program(programBinary);
 
@@ -103,10 +103,10 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
-      const paymentReceipt = await payWithWalletFromPrivateKey(
+      const paymentReceipt = await payWithWallet(
         nilChainClient,
         nilChainWallet,
-        quote
+        quote,
       );
 
       setPaymentReceipt(paymentReceipt);
@@ -160,12 +160,12 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
       )}
 
       <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-        Get Quote{' '}
+        Get Quote{" "}
         {loadingQuote && (
           <CircularProgress
             size="14px"
             color="inherit"
-            style={{ marginLeft: '10px' }}
+            style={{ marginLeft: "10px" }}
           />
         )}
       </Button>

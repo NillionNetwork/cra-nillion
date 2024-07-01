@@ -3,8 +3,6 @@ import { GasPrice, SigningStargateClient } from "@cosmjs/stargate";
 import { PaymentReceipt } from "@nillion/client-web";
 import { MsgPayFor, typeUrl } from "@nillion/client-web/proto";
 import { getKeplr, signerViaKeplr } from "./keplr";
-import { OfflineDirectSigner } from "@cosmjs/proto-signing";
-import { OfflineAminoSigner } from "@keplr-wallet/types";
 
 export interface NillionEnvConfig {
   clusterId: string;
@@ -24,7 +22,42 @@ export const config: NillionEnvConfig = {
   },
 };
 
+function options(registry: Registry): any {
+  return {
+    registry,
+    gasPrice: GasPrice.fromString("25unil"),
+    gasAdjustment: 1.3,
+    autoGas: true,
+  };
+}
+
+async function createNilChainClientAndWallet(
+  wallet: any,
+): Promise<[SigningStargateClient, any]> {
+  const registry = new Registry();
+  registry.register(typeUrl, MsgPayFor);
+
+  const opts = options(registry);
+
+  const client = await SigningStargateClient.connectWithSigner(
+    config.chain.endpoint,
+    wallet,
+    opts,
+  );
+  return [client, wallet];
+}
+
 export async function createNilChainClientAndWalletFromPrivateKey(): Promise<
+  [SigningStargateClient, any]
+> {
+  const key = Uint8Array.from(
+    config.chain.keys[0].match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)),
+  );
+  const wallet = await DirectSecp256k1Wallet.fromKey(key, "nillion");
+  return createNilChainClientAndWallet(wallet);
+}
+
+export async function createNilChainClientAndWalletFromKeplr(): Promise<
   [SigningStargateClient, any]
 > {
   const keplr = await getKeplr();
@@ -32,26 +65,10 @@ export async function createNilChainClientAndWalletFromPrivateKey(): Promise<
     throw new Error("Keplr extension not installed");
   }
   const wallet = await signerViaKeplr(config.clusterId, keplr);
-
-  const registry = new Registry();
-  registry.register(typeUrl, MsgPayFor);
-
-  const options = {
-    registry,
-    gasPrice: GasPrice.fromString("25unil"),
-    gasAdjustment: 1.3,
-    autoGas: true,
-  };
-
-  const client = await SigningStargateClient.connectWithSigner(
-    config.chain.endpoint,
-    wallet,
-    options,
-  );
-  return [client, wallet];
+  return createNilChainClientAndWallet(wallet);
 }
 
-export async function payWithWalletFromPrivateKey(
+export async function payWithWallet(
   nilChainClient: SigningStargateClient,
   wallet: any,
   quoteInfo: any,
