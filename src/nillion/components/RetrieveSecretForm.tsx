@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import * as nillion from '@nillion/client-web';
-import { getQuote } from '../helpers/getQuote';
+import React, { useState } from "react";
+import * as nillion from "@nillion/client-web";
+import { getQuote } from "../helpers/getQuote";
 import {
   createNilChainClientAndWalletFromPrivateKey,
-  payWithWalletFromPrivateKey,
-} from '../helpers/nillion';
-import { retrieveSecret } from '../helpers/retrieveSecret';
+  payWithWallet,
+} from "../helpers/nillion";
+import { retrieveSecret } from "../helpers/retrieveSecret";
 import {
   Box,
   Button,
@@ -14,8 +14,8 @@ import {
   ListItem,
   ListItemText,
   TextField,
-} from '@mui/material';
-import PayButton from './PayButton';
+} from "@mui/material";
+import { PayButton } from "./PayButton";
 
 interface RetrieveSecretProps {
   nillionClient: nillion.NillionClient;
@@ -24,8 +24,8 @@ interface RetrieveSecretProps {
 const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
   nillionClient,
 }: RetrieveSecretProps) => {
-  const [storeId, setStoreId] = useState('');
-  const [secretName, setSecretName] = useState('');
+  const [storeId, setStoreId] = useState("");
+  const [secretName, setSecretName] = useState("");
   const [quote, setQuote] = useState<any | null>(null);
   const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
   const [retrievedValue, setRetrievedValue] = useState<string | null>(null);
@@ -33,8 +33,8 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
   const [loadingPayment, setLoadingPayment] = useState(false);
 
   const reset = () => {
-    setStoreId('');
-    setSecretName('');
+    setStoreId("");
+    setSecretName("");
     setQuote(null);
     setPaymentReceipt(null);
     setRetrievedValue(null);
@@ -68,10 +68,10 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
-      const paymentReceipt = await payWithWalletFromPrivateKey(
+      const paymentReceipt = await payWithWallet(
         nilChainClient,
         nilChainWallet,
-        quote
+        quote,
       );
 
       setPaymentReceipt(paymentReceipt);
@@ -107,12 +107,12 @@ const RetrieveSecret: React.FC<RetrieveSecretProps> = ({
         margin="normal"
       />
       <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-        Get Quote{' '}
+        Get Quote{" "}
         {loadingQuote && (
           <CircularProgress
             size="14px"
             color="inherit"
-            style={{ marginLeft: '10px' }}
+            style={{ marginLeft: "10px" }}
           />
         )}
       </Button>

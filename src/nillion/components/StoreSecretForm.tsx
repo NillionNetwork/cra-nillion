@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
-import * as nillion from '@nillion/client-web';
-import { NillionClient } from '@nillion/client-web';
-import { storeSecrets } from '../helpers/storeSecrets';
-import { getQuote } from '../helpers/getQuote';
+import React, { useState } from "react";
+import * as nillion from "@nillion/client-web";
+import { NillionClient } from "@nillion/client-web";
+import { storeSecrets } from "../helpers/storeSecrets";
+import { getQuote } from "../helpers/getQuote";
 import {
   createNilChainClientAndWalletFromPrivateKey,
-  payWithWalletFromPrivateKey,
-} from '../helpers/nillion';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import { CircularProgress, List, ListItem, ListItemText } from '@mui/material';
-import PayButton from './PayButton';
+  payWithWallet,
+} from "../helpers/nillion";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
+import { CircularProgress, List, ListItem, ListItemText } from "@mui/material";
+import { PayButton } from "./PayButton";
 
-type SecretDataType = 'SecretBlob' | 'SecretInteger';
+type SecretDataType = "SecretBlob" | "SecretInteger";
 
 interface SecretFormProps {
   onNewStoredSecret: (data: any) => void;
@@ -38,12 +38,12 @@ const SecretForm: React.FC<SecretFormProps> = ({
   customSecretName = false,
   secretType,
   hidePermissions = false,
-  itemName = 'secret',
-  defaultUserWithComputePermissions = '',
-  defaultProgramIdForComputePermissions = '',
+  itemName = "secret",
+  defaultUserWithComputePermissions = "",
+  defaultProgramIdForComputePermissions = "",
 }) => {
   const [secretNameFromForm, setSecretNameFromForm] = useState(secretName);
-  const [secret, setSecret] = useState('');
+  const [secret, setSecret] = useState("");
   const [quote, setQuote] = useState<any | null>(null);
   const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
   const [storedSecrets, setStoredSecrets] = useState<any | null>([]);
@@ -55,15 +55,15 @@ const SecretForm: React.FC<SecretFormProps> = ({
   const [
     permissionedUserIdForRetrieveSecret,
     setPermissionedUserIdForRetrieveSecret,
-  ] = useState('');
+  ] = useState("");
   const [
     permissionedUserIdForUpdateSecret,
     setPermissionedUserIdForUpdateSecret,
-  ] = useState('');
+  ] = useState("");
   const [
     permissionedUserIdForDeleteSecret,
     setPermissionedUserIdForDeleteSecret,
-  ] = useState('');
+  ] = useState("");
   const [
     permissionedUserIdForComputeSecret,
     setPermissionedUserIdForComputeSecret,
@@ -74,12 +74,12 @@ const SecretForm: React.FC<SecretFormProps> = ({
 
   const reset = () => {
     setSecretNameFromForm(secretName);
-    setSecret('');
+    setSecret("");
     setQuote(null);
     setPaymentReceipt(null);
-    setPermissionedUserIdForRetrieveSecret('');
-    setPermissionedUserIdForUpdateSecret('');
-    setPermissionedUserIdForDeleteSecret('');
+    setPermissionedUserIdForRetrieveSecret("");
+    setPermissionedUserIdForUpdateSecret("");
+    setPermissionedUserIdForDeleteSecret("");
     setPermissionedUserIdForComputeSecret(defaultUserWithComputePermissions);
     setProgramIdForComputePermissions(defaultProgramIdForComputePermissions);
   };
@@ -90,14 +90,14 @@ const SecretForm: React.FC<SecretFormProps> = ({
       setLoadingQuote(true);
       const secretForQuote = new nillion.NadaValues();
 
-      if (secretType === 'SecretBlob') {
+      if (secretType === "SecretBlob") {
         const byteArraySecret = new TextEncoder().encode(secret);
         const newSecretBlob =
           nillion.NadaValue.new_secret_blob(byteArraySecret);
         secretForQuote.insert(secretNameFromForm, newSecretBlob);
       } else {
         const newSecretInteger = nillion.NadaValue.new_secret_integer(
-          secret.toString()
+          secret.toString(),
         );
         secretForQuote.insert(secretNameFromForm, newSecretInteger);
       }
@@ -105,7 +105,7 @@ const SecretForm: React.FC<SecretFormProps> = ({
       const ttl_days = 30;
       const storeOperation = nillion.Operation.store_values(
         secretForQuote,
-        ttl_days
+        ttl_days,
       );
 
       const quote = await getQuote({
@@ -130,10 +130,10 @@ const SecretForm: React.FC<SecretFormProps> = ({
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
-      const paymentReceipt = await payWithWalletFromPrivateKey(
+      const paymentReceipt = await payWithWallet(
         nilChainClient,
         nilChainWallet,
-        quote
+        quote,
       );
 
       setPaymentReceipt(paymentReceipt);
@@ -179,7 +179,7 @@ const SecretForm: React.FC<SecretFormProps> = ({
   };
 
   return isLoading ? (
-    'Storing secret...'
+    "Storing secret..."
   ) : (
     <Box component="form" onSubmit={handleGetQuoteSubmit} sx={{ mt: 2 }}>
       <p>Set your secret value. Get a quote, then pay to store the secret.</p>
@@ -198,7 +198,7 @@ const SecretForm: React.FC<SecretFormProps> = ({
       )}
       <TextField
         label={`Set ${itemName} value`}
-        type={secretType === 'SecretBlob' ? 'text' : 'number'}
+        type={secretType === "SecretBlob" ? "text" : "number"}
         value={secret}
         onChange={(e) => setSecret(e.target.value)}
         required
@@ -246,7 +246,7 @@ const SecretForm: React.FC<SecretFormProps> = ({
         />
       )}
 
-      {!hidePermissions && secretType === 'SecretInteger' && (
+      {!hidePermissions && secretType === "SecretInteger" && (
         <TextField
           label="Optional: Set a user id to grant compute permissions to another user"
           value={permissionedUserIdForComputeSecret}
@@ -260,7 +260,7 @@ const SecretForm: React.FC<SecretFormProps> = ({
         />
       )}
 
-      {!hidePermissions && secretType === 'SecretInteger' && (
+      {!hidePermissions && secretType === "SecretInteger" && (
         <TextField
           label="Optional: Set program id for compute permissions"
           value={programIdForComputePermissions}
@@ -273,12 +273,12 @@ const SecretForm: React.FC<SecretFormProps> = ({
       )}
 
       <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-        Get Quote{' '}
+        Get Quote{" "}
         {loadingQuote && (
           <CircularProgress
             size="14px"
             color="inherit"
-            style={{ marginLeft: '10px' }}
+            style={{ marginLeft: "10px" }}
           />
         )}
       </Button>

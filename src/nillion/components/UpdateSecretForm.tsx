@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import * as nillion from '@nillion/client-web';
-import { NillionClient } from '@nillion/client-web';
-import { updateSecret } from '../helpers/updateSecret';
-import { getQuote } from '../helpers/getQuote';
+import React, { useState } from "react";
+import * as nillion from "@nillion/client-web";
+import { NillionClient } from "@nillion/client-web";
+import { updateSecret } from "../helpers/updateSecret";
+import { getQuote } from "../helpers/getQuote";
 import {
   createNilChainClientAndWalletFromPrivateKey,
-  payWithWalletFromPrivateKey,
-} from '../helpers/nillion';
+  payWithWallet,
+} from "../helpers/nillion";
 import {
   Box,
   Button,
@@ -19,10 +19,10 @@ import {
   MenuItem,
   Select,
   TextField,
-} from '@mui/material';
-import PayButton from './PayButton';
+} from "@mui/material";
+import { PayButton } from "./PayButton";
 
-type SecretDataType = 'SecretBlob' | 'SecretInteger';
+type SecretDataType = "SecretBlob" | "SecretInteger";
 
 interface UpdateSecretFormProps {
   onNewStoredSecret: (data: any) => void;
@@ -40,12 +40,12 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
   nillionClient,
   isDisabled = false,
   customSecretName = false,
-  itemName = 'secret',
+  itemName = "secret",
 }) => {
   const [secretNameFromForm, setSecretNameFromForm] = useState(secretName);
-  const [secret, setSecret] = useState('');
-  const [secretStoreId, setSecretStoreId] = useState('');
-  const [secretType, setSecretType] = useState<SecretDataType>('SecretBlob');
+  const [secret, setSecret] = useState("");
+  const [secretStoreId, setSecretStoreId] = useState("");
+  const [secretType, setSecretType] = useState<SecretDataType>("SecretBlob");
   const [quote, setQuote] = useState<any | null>(null);
   const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
   const [storedSecrets, setStoredSecrets] = useState<any | null>([]);
@@ -56,8 +56,8 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
   const [loadingPayment, setLoadingPayment] = useState(false);
   const reset = () => {
     setSecretNameFromForm(secretName);
-    setSecretStoreId('');
-    setSecret('');
+    setSecretStoreId("");
+    setSecret("");
     setQuote(null);
   };
 
@@ -67,7 +67,7 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
       setLoadingQuote(true);
       const secretForQuote = new nillion.NadaValues();
 
-      if (secretType === 'SecretBlob') {
+      if (secretType === "SecretBlob") {
         const byteArraySecret = new TextEncoder().encode(secret);
         // create new SecretBlob with encoded secret
         const newSecretBlob =
@@ -77,7 +77,7 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
       } else {
         // create new SecretInteger
         const newSecretInteger = nillion.NadaValue.new_secret_integer(
-          secret.toString()
+          secret.toString(),
         );
 
         // insert the SecretInteger into secrets object
@@ -87,7 +87,7 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
       const ttl_days = 30;
       const updateOperation = nillion.Operation.update_values(
         secretForQuote,
-        ttl_days
+        ttl_days,
       );
 
       const quote = await getQuote({
@@ -112,10 +112,10 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
-      const paymentReceipt = await payWithWalletFromPrivateKey(
+      const paymentReceipt = await payWithWallet(
         nilChainClient,
         nilChainWallet,
-        quote
+        quote,
       );
 
       setPaymentReceipt(paymentReceipt);
@@ -187,7 +187,7 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
 
       <TextField
         label={`Set ${itemName} value`}
-        type={secretType === 'SecretBlob' ? 'text' : 'number'}
+        type={secretType === "SecretBlob" ? "text" : "number"}
         value={secret}
         onChange={(e) => setSecret(e.target.value)}
         required
@@ -198,12 +198,12 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
       />
 
       <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-        Get Quote{' '}
+        Get Quote{" "}
         {loadingQuote && (
           <CircularProgress
             size="14px"
             color="inherit"
-            style={{ marginLeft: '10px' }}
+            style={{ marginLeft: "10px" }}
           />
         )}
       </Button>
