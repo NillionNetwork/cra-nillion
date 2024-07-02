@@ -79,7 +79,7 @@ const KeplrConnectButton: React.FC<KeplrConnectButtonProps> = ({
     </>
   ) : (
     <a href="https://docs.nillion.com/guide-testnet-connect" target="_blank">
-      <Button variant="contained" color="secondary">
+      <Button variant="contained" color="primary">
         Create a Nillion Wallet
       </Button>
     </a>

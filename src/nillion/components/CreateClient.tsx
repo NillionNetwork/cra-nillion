@@ -26,7 +26,7 @@ const CreateClient: React.FC<CreateClientProps> = ({ userKey, setClient }) => {
     if (userKey) {
       await nillion.default();
       const uk = nillion.UserKey.from_base58(userKey);
-      const newClient = await initializeNillionClient(uk, seed);
+      const newClient = await initializeNillionClient(uk, defaultNodeKeySeed);
       setClient(newClient);
     }
   };
