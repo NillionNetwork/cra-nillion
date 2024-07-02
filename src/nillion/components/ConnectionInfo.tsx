@@ -1,22 +1,42 @@
 import { NillionClient } from '@nillion/client-web';
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { config } from '../helpers/nillion';
 import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import { truncateString } from '../helpers/truncateString';
 import CopyableString from './CopyableString';
 
 interface ConnectionInfoProps {
   client: NillionClient | null;
   userkey: string | null;
+  connectedAddress: string | null;
 }
 
-const ConnectionInfo: React.FC<ConnectionInfoProps> = ({ client, userkey }) => {
+const ConnectionInfo: React.FC<ConnectionInfoProps> = ({
+  client,
+  userkey,
+  connectedAddress,
+}) => {
   return (
     <Box mb={2}>
       <List>
+        <ListItem>
+          <ListItemText>
+            <strong>Nillion Wallet Address</strong>{' '}
+            {connectedAddress ? (
+              <CopyableString
+                copyText={connectedAddress}
+                text={connectedAddress}
+                shouldTruncate={true}
+                truncateLength={10}
+                descriptor="party id"
+              />
+            ) : (
+              'Not connected - connect your Nillion Wallet'
+            )}
+          </ListItemText>
+        </ListItem>
         <ListItem>
           <ListItemText>
             <strong>Cluster ID:</strong>{' '}

@@ -1,10 +1,9 @@
-import { DirectSecp256k1Wallet, Registry } from '@cosmjs/proto-signing';
+import { Registry } from '@cosmjs/proto-signing';
 import { GasPrice, SigningStargateClient } from '@cosmjs/stargate';
 import { PaymentReceipt } from '@nillion/client-web';
 import { MsgPayFor, typeUrl } from '@nillion/client-web/proto';
 import { getKeplr, signerViaKeplr } from './keplr';
-import { OfflineDirectSigner } from '@cosmjs/proto-signing';
-import { ChainInfo, OfflineAminoSigner } from '@keplr-wallet/types';
+import { ChainInfo } from '@keplr-wallet/types';
 
 export interface NillionEnvConfig {
   clusterId: string;
@@ -25,8 +24,8 @@ export const config: NillionEnvConfig = {
     endpoint: `${window.location.origin}/nilchain-proxy`, // see webpack.config.js proxy
     keys: [process.env.REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY || ''],
     chainInfo: {
-      rpc: 'http://127.0.0.1:48102',
-      rest: 'http://localhost:26650',
+      rpc: process.env.REACT_APP_NILLION_NILCHAIN_JSON_RPC || '',
+      rest: 'https://testnet-nillion-api.lavenderfive.com',
       chainId: process.env.REACT_APP_NILLION_NILCHAIN_CHAIN_ID || '',
       chainName: process.env.REACT_APP_NILLION_NILCHAIN_CHAIN_ID || '',
       chainSymbolImageUrl:
@@ -77,26 +76,24 @@ export const config: NillionEnvConfig = {
   },
 };
 
-export async function createNilChainClientAndWalletFromPrivateKey(): Promise<
+export async function createNilChainClientAndKeplrWallet(): Promise<
   [SigningStargateClient, any]
 > {
   const keplr = await getKeplr();
   if (!keplr) {
+    alert(
+      'Install Keplr and create a Nillion Wallet following instructions here: https://docs.nillion.com/guide-testnet-connect'
+    );
     throw new Error('Keplr extension not installed');
   }
   const wallet = await signerViaKeplr(config.chain.chainId, keplr);
-  console.log(wallet);
 
   const registry = new Registry();
   registry.register(typeUrl, MsgPayFor);
 
   const options = {
     registry,
-<<<<<<< HEAD
-    gasPrice: GasPrice.fromString('0unil'),
-=======
     gasPrice: GasPrice.fromString('0.0unil'),
->>>>>>> testnet
   };
 
   const client = await SigningStargateClient.connectWithSigner(
@@ -107,28 +104,60 @@ export async function createNilChainClientAndWalletFromPrivateKey(): Promise<
   return [client, wallet];
 }
 
-export async function payWithWalletFromPrivateKey(
+export interface PaymentResult {
+  error?: any | null;
+  receipt: PaymentReceipt | null;
+  tx: string | null;
+}
+
+export async function payWithKeplrWallet(
   nilChainClient: SigningStargateClient,
   wallet: any,
-  quoteInfo: any
-): Promise<PaymentReceipt> {
+  quoteInfo: any,
+  memo: string = ''
+): Promise<PaymentResult> {
   const { quote } = quoteInfo;
   const denom = 'unil';
   const [account] = await wallet.getAccounts();
   console.log(account);
-  const from = account.address;
+  const currentAddress = account.address;
 
-  const payload: MsgPayFor = {
-    fromAddress: from,
-    resource: quote.nonce,
-    amount: [{ denom, amount: quote.cost.total }],
+  const balance = await nilChainClient.getBalance(currentAddress, denom);
+
+  const paymentResult: PaymentResult = {
+    error: null,
+    receipt: null,
+    tx: null,
   };
 
-  const result = await nilChainClient.signAndBroadcast(
-    from,
-    [{ typeUrl, value: payload }],
-    'auto'
-  );
-
-  return new PaymentReceipt(quote, result.transactionHash);
+  if (balance > quote.cost.total) {
+    const payload: MsgPayFor = {
+      fromAddress: currentAddress,
+      resource: quote.nonce,
+      amount: [{ denom, amount: quote.cost.total }],
+    };
+    try {
+      const result = await nilChainClient.signAndBroadcast(
+        currentAddress,
+        [{ typeUrl, value: payload }],
+        'auto',
+        memo
+      );
+      return {
+        ...paymentResult,
+        receipt: new PaymentReceipt(quote, result.transactionHash),
+        tx: result.transactionHash,
+      };
+    } catch (error) {
+      return {
+        ...paymentResult,
+        error,
+      };
+    }
+  } else {
+    return {
+      ...paymentResult,
+      error: `Account ${currentAddress} has an insufficient balance.`,
+    };
+  }
 }

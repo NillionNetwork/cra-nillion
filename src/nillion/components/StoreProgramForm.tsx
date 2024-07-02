@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as nillion from '@nillion/client-web';
 import { getQuote } from '../helpers/getQuote';
-import {
-  createNilChainClientAndWalletFromPrivateKey,
-  payWithWalletFromPrivateKey,
-} from '../helpers/nillion';
+import { PaymentResult, payWithKeplrWallet } from '../helpers/nillion';
 import { storeProgram } from '../helpers/storeProgram';
 import {
   Box,
@@ -23,9 +20,12 @@ import { transformNadaProgramToUint8Array } from '../helpers/transformNadaProgra
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import python from 'react-syntax-highlighter/dist/esm/languages/hljs/python';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { SigningStargateClient } from '@cosmjs/stargate';
 
 interface StoreProgramProps {
-  nillionClient: nillion.NillionClient;
+  nillionClient: nillion.NillionClient | null;
+  nilchainClient: any | null;
+  nillionWallet: SigningStargateClient | null;
   defaultProgram?: string;
   onNewStoredProgram?: (data: any) => void;
 }
@@ -34,11 +34,16 @@ SyntaxHighlighter.registerLanguage('python', python);
 
 const StoreProgram: React.FC<StoreProgramProps> = ({
   nillionClient,
+  nilchainClient,
+  nillionWallet,
   defaultProgram = '',
   onNewStoredProgram,
 }: StoreProgramProps) => {
   const [quote, setQuote] = useState<any | null>(null);
-  const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
+  const [lastTx, setLastTx] = useState<string | null>(null);
+  const [storedProgramError, setStoredProgramError] = useState<any | null>(
+    null
+  );
   const [selectedProgram, setSelectedProgram] =
     useState<string>(defaultProgram);
   const [programId, setProgramId] = useState<string | null>(null);
@@ -48,12 +53,13 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
 
   const reset = () => {
     setQuote(null);
-    setPaymentReceipt(null);
     setSelectedProgram(defaultProgram);
     setProgramId(null);
     setProgramCode(null);
     setLoadingQuote(false);
     setLoadingPayment(false);
+    setStoredProgramError(null);
+    setLastTx(null);
   };
 
   // programs need to have .nada.bin files in public/programs/*
@@ -99,29 +105,34 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
   };
 
   const handlePayAndStoreProgram = async () => {
-    if (nillionClient && quote?.operation) {
+    if (nillionClient && nilchainClient && nillionWallet && quote?.operation) {
       setLoadingPayment(true);
-      const [nilChainClient, nilChainWallet] =
-        await createNilChainClientAndWalletFromPrivateKey();
-
-      const paymentReceipt = await payWithWalletFromPrivateKey(
-        nilChainClient,
-        nilChainWallet,
-        quote
+      const paymentReceipt: PaymentResult = await payWithKeplrWallet(
+        nilchainClient,
+        nillionWallet,
+        quote,
+        `store program: ${selectedProgram}`
       );
 
-      setPaymentReceipt(paymentReceipt);
-      const program_id = await storeProgram({
-        nillionClient,
-        receipt: paymentReceipt,
-        programName: selectedProgram,
-      });
+      const { receipt, error, tx } = paymentReceipt;
 
-      setProgramId(program_id);
-      if (onNewStoredProgram) {
-        onNewStoredProgram({ program_id });
+      if (receipt && tx) {
+        setLastTx(tx);
+        const program_id = await storeProgram({
+          nillionClient,
+          receipt,
+          programName: selectedProgram,
+        });
+
+        setProgramId(program_id);
+        if (onNewStoredProgram) {
+          onNewStoredProgram({ program_id });
+        }
       }
+
       setLoadingPayment(false);
+      setStoredProgramError(error);
+      setLastTx(null);
     }
   };
 
@@ -211,6 +222,8 @@ const StoreProgram: React.FC<StoreProgramProps> = ({
                   ]
                 : []
             }
+            errorMessage={storedProgramError?.toString()}
+            tx={lastTx}
           />
         </Box>
       )}

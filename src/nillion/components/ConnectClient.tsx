@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ConnectionInfo from './ConnectionInfo';
 import GenerateUserKey from './GenerateUserKey';
 import CreateClient from './CreateClient';
 import { NillionClient } from '@nillion/client-web';
 import { Box, Button } from '@mui/material';
+import KeplrConnectButton from './KeplrConnectButton';
+import { SigningStargateClient } from '@cosmjs/stargate';
 
 interface ConnectionSectionProps {
   client: NillionClient | null;
   userkey: string | null;
   setUserKey: React.Dispatch<React.SetStateAction<string | null>>;
   setClient: React.Dispatch<React.SetStateAction<NillionClient | null>>;
+  setChainClient: (client: SigningStargateClient | null) => void;
+  setNillionWallet: (wallet: any | null) => void;
 }
 
 const ConnectionSection: React.FC<ConnectionSectionProps> = ({
@@ -17,19 +21,53 @@ const ConnectionSection: React.FC<ConnectionSectionProps> = ({
   userkey,
   setUserKey,
   setClient,
+  setChainClient,
+  setNillionWallet,
 }) => {
   const [isVisible, setIsVisible] = useState(true);
+  const [connectedAddress, setConnectedAddress] = useState(null);
 
   const toggleVisibility = () => {
     setIsVisible(!isVisible);
   };
 
+  const handleChangeWallet = async (wallet: any) => {
+    setNillionWallet(wallet);
+    if (wallet) {
+      const [account] = await wallet.getAccounts();
+      setConnectedAddress(account.address);
+    } else {
+      setConnectedAddress(null);
+    }
+  };
+
+  useEffect(() => {
+    if (userkey) {
+      setIsVisible(false);
+    }
+  }, [userkey]);
+
   return (
     <Box my={2}>
-      <h3>NillionClient is {client ? 'connected 🟢' : 'not connected 🔴'}</h3>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <h3>
+          {' '}
+          Nillion Wallet is{' '}
+          {connectedAddress ? 'connected 🟢' : 'not connected 🔴'} |
+          NillionClient is {client ? 'connected 🟢' : 'not connected 🔴'}
+        </h3>
+        <KeplrConnectButton
+          setChainClient={setChainClient}
+          setWallet={handleChangeWallet}
+        />
+      </Box>
 
       <div>
-        <ConnectionInfo client={client} userkey={userkey} />
+        <ConnectionInfo
+          client={client}
+          userkey={userkey}
+          connectedAddress={connectedAddress}
+        />
         {isVisible && (
           <>
             <GenerateUserKey setUserKey={setUserKey} />

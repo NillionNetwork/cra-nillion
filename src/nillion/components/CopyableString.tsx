@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Button, Snackbar } from '@mui/material';
+import { Snackbar } from '@mui/material';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';

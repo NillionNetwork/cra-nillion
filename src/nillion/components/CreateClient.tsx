@@ -53,18 +53,19 @@ const CreateClient: React.FC<CreateClientProps> = ({ userKey, setClient }) => {
         predictable.
       </p>
       <form onSubmit={handleClientNodeKeyUpdate}>
-        <TextField
-          type="text"
-          value={seed}
-          onChange={handleSeedChange}
-          placeholder="[Optional] seed nodekey"
-          variant="outlined"
-          fullWidth
-          margin="normal"
-        />
-        <Button type="submit" variant="contained" color="secondary">
-          Update nodekey with seed {seed && `'${seed}'`}
-        </Button>
+        <Box display="flex" alignItems="center">
+          <TextField
+            type="text"
+            value={seed}
+            onChange={handleSeedChange}
+            placeholder="[Optional] seed"
+            variant="outlined"
+            sx={{ mr: 2 }}
+          />
+          <Button type="submit" variant="contained" color="secondary">
+            Update nodekey with seed {seed && `'${seed}'`}
+          </Button>
+        </Box>
       </form>
     </Box>
   );

@@ -2,41 +2,20 @@ import React, { useEffect, useState } from 'react';
 import { NillionClient } from '@nillion/client-web';
 import StoreSecretForm from './nillion/components/StoreSecretForm';
 import RetrieveSecret from './nillion/components/RetrieveSecretForm';
-import {
-  readStorageForUserAtPage,
-  updateStorageForUserAtPage,
-} from './nillion/helpers/localStorage';
 import UpdateSecretForm from './nillion/components/UpdateSecretForm';
 import StoreProgram from './nillion/components/StoreProgramForm';
 import ConnectionSection from './nillion/components/ConnectClient';
 import { Container, Box, Tabs, Tab, Typography } from '@mui/material';
+import { SigningStargateClient } from '@cosmjs/stargate';
 
 export default function Main() {
   const [userkey, setUserKey] = useState<string | null>(null);
   const [client, setClient] = useState<NillionClient | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [partyId, setPartyId] = useState<string | null>(null);
+  const [nilchainClient, setNilchainClient] =
+    useState<SigningStargateClient | null>(null);
+  const [nillionWallet, setNillionWallet] = useState<any | null>(null);
   const [storedSecretInfo, setStoredSecretInfo] = useState<any>({});
-  const [localStorageStoredSecrets, setLocalStorageStoredSecrets] =
-    useState<any>({});
-  const localStoragePageName = 'main-flow';
   const [tabIndex, setTabIndex] = useState(0);
-
-  useEffect(() => {
-    if (userkey && client) {
-      setUserId(client.user_id);
-      setPartyId(client.party_id);
-
-      const storedItems = readStorageForUserAtPage(
-        client.user_id,
-        localStoragePageName
-      );
-      if (storedItems && Object.keys(storedItems).length > 0) {
-        setLocalStorageStoredSecrets(storedItems);
-        setStoredSecretInfo(storedItems);
-      }
-    }
-  }, [userkey, client]);
 
   const handleNewStoredSecret = (newSecretInfo: any) => {
     const storeId = newSecretInfo.storeId;
@@ -45,13 +24,6 @@ export default function Main() {
       ...secrets,
       [storeId]: { ...storedSecretInfo[storeId], ...newSecretInfo },
     }));
-
-    if (userId) {
-      updateStorageForUserAtPage(userId, localStoragePageName, {
-        ...storedSecretInfo,
-        [storeId]: { ...storedSecretInfo[storeId], ...newSecretInfo },
-      });
-    }
   };
 
   const handleTabChange = (event: React.ChangeEvent<{}>, newValue: number) => {
@@ -70,10 +42,12 @@ export default function Main() {
         userkey={userkey}
         setUserKey={setUserKey}
         setClient={setClient}
+        setChainClient={setNilchainClient}
+        setNillionWallet={setNillionWallet}
       />
 
-      {client && (
-        <Box py={4} mb={8}>
+      {client && nilchainClient && nillionWallet && (
+        <Box py={1} mb={8}>
           <h1>Perform a Nillion Operation</h1>
           <Tabs
             value={tabIndex}
@@ -94,6 +68,8 @@ export default function Main() {
                 secretName={''}
                 onNewStoredSecret={handleNewStoredSecret}
                 nillionClient={client}
+                nilchainClient={nilchainClient}
+                nillionWallet={nillionWallet}
                 secretType="SecretBlob"
                 isLoading={false}
                 customSecretName
@@ -109,6 +85,8 @@ export default function Main() {
                 secretName={''}
                 onNewStoredSecret={handleNewStoredSecret}
                 nillionClient={client}
+                nilchainClient={nilchainClient}
+                nillionWallet={nillionWallet}
                 secretType="SecretInteger"
                 isLoading={false}
                 customSecretName
@@ -120,7 +98,11 @@ export default function Main() {
           <Box hidden={tabIndex !== 2} py={3}>
             <Typography component="div">
               <h2>Retrieve Secret</h2>
-              <RetrieveSecret nillionClient={client} />
+              <RetrieveSecret
+                nillionClient={client}
+                nilchainClient={nilchainClient}
+                nillionWallet={nillionWallet}
+              />
             </Typography>
           </Box>
 
@@ -131,6 +113,8 @@ export default function Main() {
                 secretName={''}
                 onNewStoredSecret={handleNewStoredSecret}
                 nillionClient={client}
+                nilchainClient={nilchainClient}
+                nillionWallet={nillionWallet}
                 customSecretName
                 itemName=""
               />
@@ -142,6 +126,8 @@ export default function Main() {
               <h2>Store Program</h2>
               <StoreProgram
                 nillionClient={client}
+                nilchainClient={nilchainClient}
+                nillionWallet={nillionWallet}
                 defaultProgram="addition_simple"
               />
             </Typography>

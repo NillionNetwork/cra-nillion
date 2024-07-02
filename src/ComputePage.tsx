@@ -8,6 +8,8 @@ import StoreSecretForm from './nillion/components/StoreSecretForm';
 import StoreProgram from './nillion/components/StoreProgramForm';
 import ComputeForm from './nillion/components/ComputeForm';
 import ConnectionInfo from './nillion/components/ConnectionInfo';
+import KeplrConnectButton from './nillion/components/KeplrConnectButton';
+import { SigningStargateClient } from '@cosmjs/stargate';
 
 export default function Main() {
   const programName = 'addition_simple';
@@ -15,6 +17,10 @@ export default function Main() {
   const partyName = 'Party1';
   const [userkey, setUserKey] = useState<string | null>(null);
   const [client, setClient] = useState<NillionClient | null>(null);
+  const [nilchainClient, setNilchainClient] =
+    useState<SigningStargateClient | null>(null);
+  const [nillionWallet, setNillionWallet] = useState<any | null>(null);
+  const [connectedAddress, setConnectedAddress] = useState(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [partyId, setPartyId] = useState<string | null>(null);
   const [storeId_my_int1, setStoreId_my_int1] = useState<string | null>(null);
@@ -33,6 +39,19 @@ export default function Main() {
     }
   }, [userkey, client]);
 
+  useEffect(() => {
+    const getAddress = async (wallet: any) => {
+      setNillionWallet(wallet);
+      if (wallet) {
+        const [account] = await wallet.getAccounts();
+        setConnectedAddress(account.address);
+      } else {
+        setConnectedAddress(null);
+      }
+    };
+    getAddress(nillionWallet);
+  }, [nillionWallet]);
+
   return (
     <div>
       <h1>Blind Computation Demo</h1>
@@ -40,25 +59,36 @@ export default function Main() {
         Connect to Nillion with a user key, then follow the steps to store a
         program, store secrets, and compute on the secrets.
       </p>
-      <ConnectionInfo client={client} userkey={userkey} />
-
-      <h1>1. Connect to Nillion Client {client && ' ✅'}</h1>
-      <GenerateUserKey setUserKey={setUserKey} />
+      <ConnectionInfo
+        client={client}
+        userkey={userkey}
+        connectedAddress={connectedAddress}
+      />
+      <h1>1. Connect to Nillion Wallet {connectedAddress && ' ✅'}</h1>
+      <KeplrConnectButton
+        setChainClient={setNilchainClient}
+        setWallet={setNillionWallet}
+      />
+      <br />
+      <h1>2. Connect to Nillion Client {client && ' ✅'}</h1>
+      {connectedAddress && <GenerateUserKey setUserKey={setUserKey} />}
 
       {userkey && <CreateClient userKey={userkey} setClient={setClient} />}
       <br />
-      <h1>2. Store Program {programId && ' ✅'}</h1>
+      <h1>3. Store Program {programId && ' ✅'}</h1>
       {client && (
         <>
           <StoreProgram
             nillionClient={client}
+            nilchainClient={nilchainClient}
+            nillionWallet={nillionWallet}
             defaultProgram={programName}
             onNewStoredProgram={(program) => setProgramId(program.program_id)}
           />
         </>
       )}
       <br />
-      <h1>3. Store Secrets {storeId_my_int1 && storeId_my_int2 && ' ✅'}</h1>
+      <h1>4. Store Secrets {storeId_my_int1 && storeId_my_int2 && ' ✅'}</h1>
       {userId && programId && (
         <>
           <h2>Store my_int1 {storeId_my_int1 && ' ✅'}</h2>
@@ -66,6 +96,8 @@ export default function Main() {
             secretName={'my_int1'}
             onNewStoredSecret={(secret) => setStoreId_my_int1(secret.storeId)}
             nillionClient={client}
+            nilchainClient={nilchainClient}
+            nillionWallet={nillionWallet}
             secretType="SecretInteger"
             isLoading={false}
             itemName=""
@@ -79,6 +111,8 @@ export default function Main() {
             secretName={'my_int2'}
             onNewStoredSecret={(secret) => setStoreId_my_int2(secret.storeId)}
             nillionClient={client}
+            nilchainClient={nilchainClient}
+            nillionWallet={nillionWallet}
             secretType="SecretInteger"
             isLoading={false}
             itemName=""
@@ -89,7 +123,7 @@ export default function Main() {
         </>
       )}
       <br />
-      <h1>4. Compute {computeResult && ' ✅'}</h1>
+      <h1>5. Compute {computeResult && ' ✅'}</h1>
       {client &&
         programId &&
         storeId_my_int1 &&
@@ -98,6 +132,8 @@ export default function Main() {
         additionalComputeValues && (
           <ComputeForm
             nillionClient={client}
+            nilchainClient={nilchainClient}
+            nillionWallet={nillionWallet}
             programId={programId}
             additionalComputeValues={additionalComputeValues}
             storeIds={[storeId_my_int1, storeId_my_int2]}

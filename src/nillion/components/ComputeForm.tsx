@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import * as nillion from '@nillion/client-web';
 import { getQuote } from '../helpers/getQuote';
-import {
-  createNilChainClientAndWalletFromPrivateKey,
-  payWithWalletFromPrivateKey,
-} from '../helpers/nillion';
+import { PaymentResult, payWithKeplrWallet } from '../helpers/nillion';
 import { computeProgram } from '../helpers/compute';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { CircularProgress, List, ListItem, ListItemText } from '@mui/material';
 import PayButton from './PayButton';
+import { SigningStargateClient } from '@cosmjs/stargate';
 
 interface ComputeParty {
   partyName: string;
@@ -17,7 +15,9 @@ interface ComputeParty {
 }
 
 interface ComputeProgramProps {
-  nillionClient: nillion.NillionClient;
+  nillionClient: nillion.NillionClient | null;
+  nilchainClient: any | null;
+  nillionWallet: SigningStargateClient | null;
   programId: string;
   additionalComputeValues: nillion.NadaValues;
   storeIds: string[];
@@ -29,6 +29,8 @@ interface ComputeProgramProps {
 
 const ComputeComponent: React.FC<ComputeProgramProps> = ({
   nillionClient,
+  nilchainClient,
+  nillionWallet,
   programId,
   additionalComputeValues,
   storeIds,
@@ -38,7 +40,8 @@ const ComputeComponent: React.FC<ComputeProgramProps> = ({
   onComputeProgram,
 }: ComputeProgramProps) => {
   const [quote, setQuote] = useState<any | null>(null);
-  const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
+  const [lastTx, setLastTx] = useState<string | null>(null);
+  const [storedSecretError, setStoredSecretError] = useState<any | null>(null);
   const [computeResult, setComputeResult] = useState<any | null>(null);
   const [loadingQuote, setLoadingQuote] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
@@ -69,36 +72,40 @@ const ComputeComponent: React.FC<ComputeProgramProps> = ({
   };
 
   const handlePayAndCompute = async () => {
-    if (nillionClient && quote?.operation) {
+    if (nillionClient && nilchainClient && nillionWallet && quote?.operation) {
       setLoadingPayment(true);
-      const [nilChainClient, nilChainWallet] =
-        await createNilChainClientAndWalletFromPrivateKey();
-
-      const paymentReceipt = await payWithWalletFromPrivateKey(
-        nilChainClient,
-        nilChainWallet,
-        quote
+      const paymentReceipt: PaymentResult = await payWithKeplrWallet(
+        nilchainClient,
+        nillionWallet,
+        quote,
+        `compute on ${programId} with storeIds: ${storeIds.join(' & ')}`
       );
 
-      setPaymentReceipt(paymentReceipt);
+      const { receipt, error, tx } = paymentReceipt;
 
-      const value = await computeProgram({
-        nillionClient,
-        receipt: paymentReceipt,
-        programId,
-        storeIds,
-        inputParties,
-        outputParties,
-        outputName,
-        additionalComputeValues,
-      });
+      if (receipt && tx) {
+        setLastTx(tx);
+        const value = await computeProgram({
+          nillionClient,
+          receipt,
+          programId,
+          storeIds,
+          inputParties,
+          outputParties,
+          outputName,
+          additionalComputeValues,
+        });
 
-      setComputeResult(value);
+        setComputeResult(value);
 
-      if (onComputeProgram) {
-        onComputeProgram({ value });
+        if (onComputeProgram) {
+          onComputeProgram({ value });
+        }
       }
+
       setLoadingPayment(false);
+      setStoredSecretError(error);
+      setLastTx(null);
     }
   };
 
@@ -156,6 +163,8 @@ const ComputeComponent: React.FC<ComputeProgramProps> = ({
                   ]
                 : []
             }
+            errorMessage={storedSecretError?.toString()}
+            tx={lastTx}
           />
         </Box>
       )}

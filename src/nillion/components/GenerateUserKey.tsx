@@ -47,9 +47,7 @@ const GenerateUserKey: React.FC<GenerateUserKeyProps> = ({ setUserKey }) => {
             onChange={handleSeedChange}
             placeholder="[Optional] seed"
             variant="outlined"
-            // fullWidth
-            // margin="normal"
-            sx={{ mr: 2 }} // Add right margin to the input field
+            sx={{ mr: 2 }}
           />
           <Button type="submit" variant="contained" color="primary">
             Generate userkey

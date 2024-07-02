@@ -3,10 +3,7 @@ import * as nillion from '@nillion/client-web';
 import { NillionClient } from '@nillion/client-web';
 import { updateSecret } from '../helpers/updateSecret';
 import { getQuote } from '../helpers/getQuote';
-import {
-  createNilChainClientAndWalletFromPrivateKey,
-  payWithWalletFromPrivateKey,
-} from '../helpers/nillion';
+import { PaymentResult, payWithKeplrWallet } from '../helpers/nillion';
 import {
   Box,
   Button,
@@ -21,6 +18,7 @@ import {
   TextField,
 } from '@mui/material';
 import PayButton from './PayButton';
+import { SigningStargateClient } from '@cosmjs/stargate';
 
 type SecretDataType = 'SecretBlob' | 'SecretInteger';
 
@@ -28,6 +26,8 @@ interface UpdateSecretFormProps {
   onNewStoredSecret: (data: any) => void;
   secretName: string;
   nillionClient: NillionClient | null;
+  nilchainClient: any | null;
+  nillionWallet: SigningStargateClient | null;
   isDisabled?: boolean;
   customSecretName?: boolean;
   hidePermissions?: boolean;
@@ -38,6 +38,8 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
   onNewStoredSecret,
   secretName,
   nillionClient,
+  nilchainClient,
+  nillionWallet,
   isDisabled = false,
   customSecretName = false,
   itemName = 'secret',
@@ -47,10 +49,11 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
   const [secretStoreId, setSecretStoreId] = useState('');
   const [secretType, setSecretType] = useState<SecretDataType>('SecretBlob');
   const [quote, setQuote] = useState<any | null>(null);
-  const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
-  const [storedSecrets, setStoredSecrets] = useState<any | null>([]);
-  const lastStoredSecret = storedSecrets.length
-    ? storedSecrets[storedSecrets.length - 1]
+  const [lastTx, setLastTx] = useState<string | null>(null);
+  const [updateSecretError, setUpdateSecretError] = useState<any | null>(null);
+  const [updatedSecrets, setUpdatedSecrets] = useState<any | null>([]);
+  const lastStoredSecret = updatedSecrets.length
+    ? updatedSecrets[updatedSecrets.length - 1]
     : null;
   const [loadingQuote, setLoadingQuote] = useState(false);
   const [loadingPayment, setLoadingPayment] = useState(false);
@@ -59,10 +62,11 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
     setSecretStoreId('');
     setSecret('');
     setQuote(null);
-    setPaymentReceipt(null);
-    setStoredSecrets(null);
+    setUpdatedSecrets([]);
     setLoadingQuote(false);
     setLoadingPayment(false);
+    setUpdateSecretError(null);
+    setLastTx(null);
   };
 
   const handleGetQuoteSubmit = async (e: React.FormEvent) => {
@@ -111,38 +115,40 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
   };
 
   const handlePayAndUpdate = async () => {
-    if (nillionClient && quote?.operation) {
+    if (nillionClient && nilchainClient && nillionWallet && quote?.operation) {
       setLoadingPayment(true);
-      const [nilChainClient, nilChainWallet] =
-        await createNilChainClientAndWalletFromPrivateKey();
-
-      const paymentReceipt = await payWithWalletFromPrivateKey(
-        nilChainClient,
-        nilChainWallet,
-        quote
+      const paymentReceipt: PaymentResult = await payWithKeplrWallet(
+        nilchainClient,
+        nillionWallet,
+        quote,
+        `update secret: ${secretNameFromForm}`
       );
 
-      setPaymentReceipt(paymentReceipt);
-
-      const storeId = await updateSecret({
-        nillionClient,
-        nillionSecrets: quote.secret,
-        updateSecretsReceipt: paymentReceipt,
-        storeId: secretStoreId,
-      });
-      const newStoredSecret = {
-        userId: nillionClient.user_id,
-        storeId,
-        secretType,
-        name: quote.rawSecret.name,
-      };
-      setStoredSecrets((current: any) => {
-        const updatedStoredSecrets = [...current];
-        updatedStoredSecrets.push(newStoredSecret);
-        return updatedStoredSecrets;
-      });
-      onNewStoredSecret(newStoredSecret);
+      const { receipt, error, tx } = paymentReceipt;
+      if (receipt && tx) {
+        setLastTx(tx);
+        const storeId = await updateSecret({
+          nillionClient,
+          nillionSecrets: quote.secret,
+          updateSecretsReceipt: receipt,
+          storeId: secretStoreId,
+        });
+        const newStoredSecret = {
+          userId: nillionClient.user_id,
+          storeId,
+          secretType,
+          name: quote.rawSecret.name,
+        };
+        setUpdatedSecrets((current: any) => {
+          const updatedupdatedSecrets = [...current];
+          updatedupdatedSecrets.push(newStoredSecret);
+          return updatedupdatedSecrets;
+        });
+        onNewStoredSecret(newStoredSecret);
+      }
       setLoadingPayment(false);
+      setUpdateSecretError(error);
+      setLastTx(null);
     }
   };
 
@@ -242,7 +248,7 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
             buttonText="Pay and update secret"
             onClick={handlePayAndUpdate}
             loading={loadingPayment}
-            displayList={!!storedSecrets.length && !!lastStoredSecret?.storeId}
+            displayList={!!updatedSecrets.length && !!lastStoredSecret?.storeId}
             listItems={
               lastStoredSecret
                 ? [
@@ -257,6 +263,8 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
                   ]
                 : []
             }
+            errorMessage={updateSecretError?.toString()}
+            tx={lastTx}
           />
         </Box>
       )}
