@@ -1,4 +1,4 @@
-# Nillion Operations and Blind Compute Demo
+# Nillion Operations and Blind Compute Demo with Keplr Wallet connection
 
 This is a demo of the JavaScript Nillion Client working with payments connected to the testnet.
 
@@ -65,12 +65,16 @@ cp .env.example .env
 Update your newly created .env with environment variables outout in your terminal by nillion-devnet
 
 ```
-# replace with values from nillion-devnet
+# replace with values from nillion-testnet
 
 REACT_APP_NILLION_CLUSTER_ID=
 REACT_APP_NILLION_BOOTNODE_WEBSOCKET=
 REACT_APP_NILLION_NILCHAIN_JSON_RPC=
+REACT_APP_NILLION_NILCHAIN_REST_API=
+REACT_APP_NILLION_NILCHAIN_CHAIN_ID=nillion-chain-testnet-1
+
 REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY=
+REACT_APP_API_BASE_PATH=/nilchain-proxy
 ```
 
 Install dependencies and start the demo project. Notice that a local nillion_js_client.tgz is installed rather than a version of the JavaScript Client from npm. This version includes payments.
