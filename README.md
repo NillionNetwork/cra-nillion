@@ -1,6 +1,6 @@
 # Nillion Operations and Blind Compute Demo
 
-This is a demo of the JavaScript Nillion Client working with payments connected to the testnet.
+This is a demo of the JavaScript Nillion Client working with payments connected to nillion-devnet.
 
 Notes
 
@@ -9,11 +9,18 @@ Notes
 
 ## Run nillion-devnet
 
-Install the `nightly-v2024-06-27-7db213f55` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
+First, [install the Nillion SDK and nilup](https://docs.nillion.com/nillion-sdk-and-tools#installation) if you haven't
 
 ```
-nilup install nightly-v2024-06-27-7db213f55
-nilup use nightly-v2024-06-27-7db213f55
+curl https://nilup.nilogy.xyz/install.sh | bash
+```
+
+Install the `latest` version of nillion-devnet to pull the latest updated versions SDK tools including the latest nillion-devnet, and optionally enable telemetry
+
+```
+nilup install latest
+nilup use latest
+nilup instrumentation enable --wallet <your-eth-wallet-address>
 ```
 
 Run the devnet using any seed (the example uses "my-seed") so the cluster id, websockets, and other environment variables stay constant even when you restart nillion-devnet.
@@ -73,7 +80,7 @@ REACT_APP_NILLION_NILCHAIN_JSON_RPC=
 REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY=
 ```
 
-Install dependencies and start the demo project. Notice that a local nillion_js_client.tgz is installed rather than a version of the JavaScript Client from npm. This version includes payments.
+Install dependencies and start the demo project.
 
 ```shell
 npm install
