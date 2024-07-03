@@ -1,4 +1,5 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 const webpack = require('webpack');
 require('dotenv').config();
@@ -6,6 +7,10 @@ require('dotenv').config();
 module.exports = {
   mode: 'development',
   entry: './src/index.tsx',
+  output: {
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist'), // Ensure this is set to 'dist'
+  },
   devServer: {
     static: {
       directory: path.join(__dirname, 'public'),
@@ -19,10 +24,24 @@ module.exports = {
       overlay: false,
     },
     historyApiFallback: true, // enable browser routing
+    proxy: [
+      {
+        context: ['/nilchain-proxy'],
+        target: process.env.REACT_APP_NILLION_NILCHAIN_JSON_RPC,
+        pathRewrite: { '^/nilchain-proxy': '' },
+        changeOrigin: true,
+        secure: false,
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: 'public/index.html',
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'public', to: '.', globOptions: { ignore: ['**/index.html'] } },
+      ],
     }),
     new webpack.DefinePlugin({
       'process.env': JSON.stringify(process.env),
@@ -53,9 +72,5 @@ module.exports = {
         type: 'asset/resource',
       },
     ],
-  },
-  output: {
-    filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist'),
   },
 };

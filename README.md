@@ -1,16 +1,26 @@
 # Nillion Operations and Blind Compute Demo
 
-This is a demo of the JavaScript Nillion Client working with payments.
+This is a demo of the JavaScript Nillion Client working with payments connected to nillion-devnet.
 
-Video setup guide: https://www.loom.com/share/c4196fca27474c2c8567a3a87e036217?sid=c73f751b-465b-433a-ae0f-976616d8935e
+Notes
+
+- This uses a proxy /nilchain-proxy set up in the webpack that targets the json rpc from your .env file
+- A Nillion config is in the nillion.ts file. This config reads environment variables from your .env file, which can either point to Testnet or nillion-devnet values
 
 ## Run nillion-devnet
 
-Re-install the `latest-experimental` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
+First, [install the Nillion SDK and nilup](https://docs.nillion.com/nillion-sdk-and-tools#installation) if you haven't
 
 ```
-nilup install latest-experimental
-nilup use latest-experimental
+curl https://nilup.nilogy.xyz/install.sh | bash
+```
+
+Install the `latest` version of nillion-devnet to pull the latest updated versions SDK tools including the latest nillion-devnet, and optionally enable telemetry
+
+```
+nilup install latest
+nilup use latest
+nilup instrumentation enable --wallet <your-eth-wallet-address>
 ```
 
 Run the devnet using any seed (the example uses "my-seed") so the cluster id, websockets, and other environment variables stay constant even when you restart nillion-devnet.
@@ -46,7 +56,6 @@ vim "/Users/steph/Library/Application Support/nillion.nillion/nillion-devnet.env
 
 This file has the nillion-devnet generated values for cluster id, websocket, json rpc, and private key. You'll need to put these in your local .env in one of the next steps so that your cra-nillion demo app connects to the nillion-devnet.
 
-
 ## Clone this repo
 
 ```
@@ -71,7 +80,7 @@ REACT_APP_NILLION_NILCHAIN_JSON_RPC=
 REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY=
 ```
 
-Install dependencies and start the demo project. Notice that a local nillion_js_client.tgz is installed rather than a version of the JavaScript Client from npm. This version includes payments.
+Install dependencies and start the demo project.
 
 ```shell
 npm install

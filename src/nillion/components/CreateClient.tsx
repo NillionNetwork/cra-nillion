@@ -1,4 +1,4 @@
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
 import React, { useState, useEffect } from 'react';
 import { config } from '../helpers/nillion';
 import Box from '@mui/material/Box';
@@ -22,23 +22,22 @@ const CreateClient: React.FC<CreateClientProps> = ({ userKey, setClient }) => {
   const [seed, setSeed] = useState<string>('');
   const defaultNodeKeySeed = `nillion-testnet-seed-${Math.floor(Math.random() * 10) + 1}`;
 
-  const updateClient = async () => {
+  const initializeNewClient = async () => {
     if (userKey) {
       await nillion.default();
       const uk = nillion.UserKey.from_base58(userKey);
       const newClient = await initializeNillionClient(uk, seed);
-      console.log('newClient', newClient);
       setClient(newClient);
     }
   };
 
   useEffect(() => {
-    updateClient();
+    initializeNewClient();
   }, [userKey]);
 
-  const handleCreateClient = async (event: React.FormEvent) => {
+  const handleClientNodeKeyUpdate = async (event: React.FormEvent) => {
     event.preventDefault();
-    await updateClient();
+    await initializeNewClient();
   };
 
   const handleSeedChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,13 +46,13 @@ const CreateClient: React.FC<CreateClientProps> = ({ userKey, setClient }) => {
 
   return (
     <Box my={2}>
-      <h3>Optional: Update Node Key</h3>
+      <h3>Optional: Seed Node Key</h3>
       <p>
         Optionally update your node key using a seed. The seed creates a
         deterministic key pair, so that the node key's corresponding party id is
         predictable.
       </p>
-      <form onSubmit={handleCreateClient}>
+      <form onSubmit={handleClientNodeKeyUpdate}>
         <TextField
           type="text"
           value={seed}

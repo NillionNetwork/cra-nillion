@@ -1,9 +1,9 @@
 import { config } from './nillion';
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
 
 interface StoreSecrets {
   nillionClient: nillion.NillionClient;
-  nillionSecrets: nillion.Secrets;
+  nillionSecrets: nillion.NadaValues;
   storeSecretsReceipt: nillion.PaymentReceipt;
   usersWithRetrievePermissions?: string[];
   usersWithUpdatePermissions?: string[];
@@ -56,7 +56,7 @@ export async function storeSecrets({
       permissions.add_compute_permissions(user_program_map);
     }
 
-    const store_id = await nillionClient.store_secrets(
+    const store_id = await nillionClient.store_values(
       config.clusterId,
       nillionSecrets,
       permissions,
@@ -65,7 +65,6 @@ export async function storeSecrets({
 
     return store_id;
   } catch (error) {
-    console.log(error);
-    return 'error';
+    return error;
   }
 }

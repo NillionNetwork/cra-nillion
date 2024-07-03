@@ -1,7 +1,7 @@
 import { DirectSecp256k1Wallet, Registry } from '@cosmjs/proto-signing';
 import { GasPrice, SigningStargateClient } from '@cosmjs/stargate';
-import { PaymentReceipt, NillionClient } from '@nillion/client';
-import { MsgPayFor, typeUrl } from '@nillion/client/proto';
+import { PaymentReceipt } from '@nillion/client-web';
+import { MsgPayFor, typeUrl } from '@nillion/client-web/proto';
 
 export interface NillionEnvConfig {
   clusterId: string;
@@ -16,7 +16,7 @@ export const config: NillionEnvConfig = {
   clusterId: process.env.REACT_APP_NILLION_CLUSTER_ID || '',
   bootnodes: [process.env.REACT_APP_NILLION_BOOTNODE_WEBSOCKET || ''],
   chain: {
-    endpoint: process.env.REACT_APP_NILLION_NILCHAIN_JSON_RPC || '',
+    endpoint: `${window.location.origin}/nilchain-proxy`, // see webpack.config.js proxy
     keys: [process.env.REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY || ''],
   },
 };
@@ -34,9 +34,7 @@ export async function createNilChainClientAndWalletFromPrivateKey(): Promise<
 
   const options = {
     registry,
-    gasPrice: GasPrice.fromString('25unil'),
-    gasAdjustment: 1.3,
-    autoGas: true,
+    gasPrice: GasPrice.fromString('0.0unil'),
   };
 
   const client = await SigningStargateClient.connectWithSigner(
@@ -62,8 +60,6 @@ export async function payWithWalletFromPrivateKey(
     resource: quote.nonce,
     amount: [{ denom, amount: quote.cost.total }],
   };
-
-  console.log(payload);
 
   const result = await nilChainClient.signAndBroadcast(
     from,

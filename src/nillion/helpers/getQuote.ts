@@ -1,5 +1,5 @@
 import { config } from './nillion';
-import * as nillion from '@nillion/client';
+import * as nillion from '@nillion/client-web';
 
 export async function getQuote({
   client,

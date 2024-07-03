@@ -1,11 +1,12 @@
-import { NillionClient } from '@nillion/client';
-import React, { useState } from 'react';
+import { NillionClient } from '@nillion/client-web';
+import React, { useState, useEffect } from 'react';
 import { config } from '../helpers/nillion';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import { truncateString } from '../helpers/truncateString';
+import CopyableString from './CopyableString';
 
 interface ConnectionInfoProps {
   client: NillionClient | null;
@@ -13,42 +14,74 @@ interface ConnectionInfoProps {
 }
 
 const ConnectionInfo: React.FC<ConnectionInfoProps> = ({ client, userkey }) => {
-  const [isVisible, setIsVisible] = useState(true);
-
-  const toggleVisibility = () => {
-    setIsVisible(!isVisible);
-  };
-
   return (
-    <Box my={2}>
-      <h3>NillionClient is {client ? 'connected 🟢' : 'not connected 🔴'}</h3>
-      {isVisible && (
-        <Box mb={2}>
-          <List>
-            <ListItem>
-              <ListItemText
-                primary={`Cluster ID: ${config.clusterId || 'Not set'}`}
+    <Box mb={2}>
+      <List>
+        <ListItem>
+          <ListItemText>
+            <strong>Cluster ID:</strong>{' '}
+            {config.clusterId ? (
+              <CopyableString
+                text={config.clusterId}
+                copyText={config.clusterId}
+                shouldTruncate={false}
+                descriptor="cluster id"
               />
-            </ListItem>
-            <ListItem>
-              <ListItemText primary={`User Key: ${userkey || 'Not set'}`} />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary={`User ID: ${client?.user_id || 'Not set'}`}
+            ) : (
+              'Not set - update your .env file with Nillion network values'
+            )}
+          </ListItemText>
+        </ListItem>
+        <ListItem>
+          <ListItemText>
+            <strong>User Key:</strong>{' '}
+            {userkey ? (
+              <CopyableString
+                text={userkey}
+                copyText={userkey}
+                shouldTruncate={true}
+                truncateLength={10}
+                descriptor="user key"
               />
-            </ListItem>
-            <ListItem>
-              <ListItemText
-                primary={`Party ID: ${client?.party_id || 'Not set'}`}
+            ) : (
+              'Not set - generate a Nillion userkey then connect with the userkey'
+            )}
+          </ListItemText>
+        </ListItem>
+
+        <ListItem>
+          <ListItemText>
+            <strong>User ID:</strong>{' '}
+            {client?.user_id ? (
+              <CopyableString
+                text={client?.user_id}
+                copyText={client?.user_id}
+                shouldTruncate={true}
+                truncateLength={10}
+                descriptor="user id"
               />
-            </ListItem>
-          </List>
-        </Box>
-      )}
-      <Button variant="contained" color="secondary" onClick={toggleVisibility}>
-        {isVisible ? 'Hide' : 'Show'} Connection Info
-      </Button>
+            ) : (
+              'Not set'
+            )}
+          </ListItemText>
+        </ListItem>
+        <ListItem>
+          <ListItemText>
+            <strong>Party ID:</strong>{' '}
+            {client?.party_id ? (
+              <CopyableString
+                copyText={client?.party_id}
+                text={client?.party_id}
+                shouldTruncate={true}
+                truncateLength={10}
+                descriptor="party id"
+              />
+            ) : (
+              'Not set'
+            )}
+          </ListItemText>
+        </ListItem>
+      </List>
     </Box>
   );
 };

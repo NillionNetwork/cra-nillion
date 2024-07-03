@@ -1,20 +1,26 @@
 import React, { useState } from 'react';
-import * as nillion from '@nillion/client';
-import { NillionClient } from '@nillion/client';
+import * as nillion from '@nillion/client-web';
+import { NillionClient } from '@nillion/client-web';
 import { updateSecret } from '../helpers/updateSecret';
 import { getQuote } from '../helpers/getQuote';
 import {
   createNilChainClientAndWalletFromPrivateKey,
   payWithWalletFromPrivateKey,
 } from '../helpers/nillion';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import Select from '@mui/material/Select';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import { List, ListItem, ListItemText } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  List,
+  ListItem,
+  ListItemText,
+  MenuItem,
+  Select,
+  TextField,
+} from '@mui/material';
+import PayButton from './PayButton';
 
 type SecretDataType = 'SecretBlob' | 'SecretInteger';
 
@@ -43,33 +49,50 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
   const [quote, setQuote] = useState<any | null>(null);
   const [paymentReceipt, setPaymentReceipt] = useState<any | null>(null);
   const [storedSecrets, setStoredSecrets] = useState<any | null>([]);
+  const lastStoredSecret = storedSecrets.length
+    ? storedSecrets[storedSecrets.length - 1]
+    : null;
+  const [loadingQuote, setLoadingQuote] = useState(false);
+  const [loadingPayment, setLoadingPayment] = useState(false);
   const reset = () => {
     setSecretNameFromForm(secretName);
     setSecretStoreId('');
     setSecret('');
     setQuote(null);
+    setPaymentReceipt(null);
+    setStoredSecrets(null);
+    setLoadingQuote(false);
+    setLoadingPayment(false);
   };
 
   const handleGetQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (nillionClient) {
-      const secretForQuote = new nillion.Secrets();
+      setLoadingQuote(true);
+      const secretForQuote = new nillion.NadaValues();
 
       if (secretType === 'SecretBlob') {
         const byteArraySecret = new TextEncoder().encode(secret);
         // create new SecretBlob with encoded secret
-        const newSecretBlob = nillion.Secret.new_blob(byteArraySecret);
+        const newSecretBlob =
+          nillion.NadaValue.new_secret_blob(byteArraySecret);
         // insert the SecretBlob into secrets object
         secretForQuote.insert(secretNameFromForm, newSecretBlob);
       } else {
         // create new SecretInteger
-        const newSecretInteger = nillion.Secret.new_integer(secret.toString());
+        const newSecretInteger = nillion.NadaValue.new_secret_integer(
+          secret.toString()
+        );
 
         // insert the SecretInteger into secrets object
         secretForQuote.insert(secretNameFromForm, newSecretInteger);
       }
 
-      const updateOperation = nillion.Operation.update_secrets(secretForQuote);
+      const ttl_days = 30;
+      const updateOperation = nillion.Operation.update_values(
+        secretForQuote,
+        ttl_days
+      );
 
       const quote = await getQuote({
         client: nillionClient,
@@ -83,12 +106,13 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
         rawSecret: { name: secretNameFromForm, value: secret },
         operation: updateOperation,
       });
+      setLoadingQuote(false);
     }
   };
 
   const handlePayAndUpdate = async () => {
-    console.log('paying...');
     if (nillionClient && quote?.operation) {
+      setLoadingPayment(true);
       const [nilChainClient, nilChainWallet] =
         await createNilChainClientAndWalletFromPrivateKey();
 
@@ -103,10 +127,9 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
       const storeId = await updateSecret({
         nillionClient,
         nillionSecrets: quote.secret,
-        storeSecretsReceipt: paymentReceipt,
+        updateSecretsReceipt: paymentReceipt,
         storeId: secretStoreId,
       });
-      console.log('stored!', storeId);
       const newStoredSecret = {
         userId: nillionClient.user_id,
         storeId,
@@ -119,6 +142,7 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
         return updatedStoredSecrets;
       });
       onNewStoredSecret(newStoredSecret);
+      setLoadingPayment(false);
     }
   };
 
@@ -150,7 +174,7 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
         />
       )}
 
-      <FormControl fullWidth sx={{ mb: 2 }}>
+      <FormControl fullWidth sx={{ my: 1 }}>
         <InputLabel id="secretTypeLabel">Select Secret Type</InputLabel>
         <Select
           labelId="secretTypeLabel"
@@ -178,7 +202,14 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
       />
 
       <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-        Get Quote
+        Get Quote{' '}
+        {loadingQuote && (
+          <CircularProgress
+            size="14px"
+            color="inherit"
+            style={{ marginLeft: '10px' }}
+          />
+        )}
       </Button>
       <Button onClick={reset} sx={{ mt: 2, ml: 2 }}>
         Reset
@@ -206,28 +237,27 @@ const UpdateSecretForm: React.FC<UpdateSecretFormProps> = ({
               />
             </ListItem>
           </List>
-          <Button
-            variant="contained"
-            color="primary"
+
+          <PayButton
+            buttonText="Pay and update secret"
             onClick={handlePayAndUpdate}
-          >
-            Pay and update secret
-          </Button>
-          {!!storedSecrets.length &&
-            storedSecrets[storedSecrets.length - 1].storeId && (
-              <List>
-                <ListItem>
-                  <ListItemText
-                    primary={`store id: ${storedSecrets[storedSecrets.length - 1].storeId}`}
-                  />
-                </ListItem>
-                <ListItem>
-                  <ListItemText
-                    primary={`secret name: ${storedSecrets[storedSecrets.length - 1].name}`}
-                  />
-                </ListItem>
-              </List>
-            )}
+            loading={loadingPayment}
+            displayList={!!storedSecrets.length && !!lastStoredSecret?.storeId}
+            listItems={
+              lastStoredSecret
+                ? [
+                    {
+                      displayText: `store id:${lastStoredSecret.storeId}`,
+                      copyText: lastStoredSecret.storeId,
+                    },
+                    {
+                      displayText: `secret name: ${lastStoredSecret.name}`,
+                      copyText: lastStoredSecret.name,
+                    },
+                  ]
+                : []
+            }
+          />
         </Box>
       )}
     </Box>
