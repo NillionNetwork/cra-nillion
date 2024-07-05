@@ -9,11 +9,11 @@ Notes
 
 ## Run nillion-devnet
 
-Install the `nightly-v2024-06-27-7db213f55` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
+Install the `latest` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
 
 ```
-nilup install nightly-v2024-06-27-7db213f55
-nilup use nightly-v2024-06-27-7db213f55
+nilup install latest
+nilup use latest
 ```
 
 Run the devnet using any seed (the example uses "my-seed") so the cluster id, websockets, and other environment variables stay constant even when you restart nillion-devnet.
