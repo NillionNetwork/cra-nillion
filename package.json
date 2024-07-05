@@ -11,7 +11,7 @@
     "@keplr-wallet/types": "^0.12.107",
     "@mui/icons-material": "^5.15.20",
     "@mui/material": "^5.15.20",
-    "@nillion/client-web": "file:npm-nillion-client-web-nightly-v2024-06-27-7db213f55.tgz",
+    "@nillion/client-web": "^0.3.0",
     "@tailwindcss/forms": "^0.5.7",
     "@types/react-router-dom": "^5.3.3",
     "buffer": "^6.0.3",
