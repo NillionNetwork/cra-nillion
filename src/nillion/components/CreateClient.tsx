@@ -27,6 +27,15 @@ const CreateClient: React.FC<CreateClientProps> = ({ userKey, setClient }) => {
       await nillion.default();
       const uk = nillion.UserKey.from_base58(userKey);
       const newClient = await initializeNillionClient(uk, seed);
+
+      const telemetryAddress =
+        process.env.REACT_APP_YOUR_ETHEREUM_ADDRESS_FOR_NILLION_TELEMETRY;
+      if (telemetryAddress) {
+        console.log(
+          `enabling Nillion JavaScript Client telemetry for eth address: ${telemetryAddress}`
+        );
+        nillion.NillionClient.enable_tracking(telemetryAddress);
+      }
       setClient(newClient);
     }
   };
