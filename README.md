@@ -7,14 +7,16 @@ Notes
 - This uses a proxy /nilchain-proxy set up in the webpack that targets the json rpc from your .env file
 - A Nillion config is in the nillion.ts file. This config reads environment variables from your .env file, which can either point to Testnet or nillion-devnet values
 
-## Run nillion-devnet
+## Connect to the Nillion Network: nillion-devnet or Nillion Testnet
 
-Install the `latest` version of nillion-devnet to pull updated SDK tools including the latest nillion-devnet.
+Install the `latest` version of nillion-devnet to pull updated SDK tools
 
 ```
 nilup install latest
 nilup use latest
 ```
+
+## nillion-devnet
 
 Run the devnet using any seed (the example uses "my-seed") so the cluster id, websockets, and other environment variables stay constant even when you restart nillion-devnet.
 
@@ -49,6 +51,10 @@ vim "/Users/steph/Library/Application Support/nillion.nillion/nillion-devnet.env
 
 This file has the nillion-devnet generated values for cluster id, websocket, json rpc, and private key. You'll need to put these in your local .env in one of the next steps so that your cra-nillion demo app connects to the nillion-devnet.
 
+### Testnet
+
+To connect to the Nillion Testnet, update .env variables with the [Nillion Testnet configuration](https://docs.nillion.com/network-configuration)
+
 ## Clone this repo
 
 ```
@@ -65,19 +71,19 @@ cp .env.example .env
 Update your newly created .env with environment variables outout in your terminal by nillion-devnet
 
 ```
-# replace with values from nillion-testnet
+REACT_APP_API_BASE_PATH=/nilchain-proxy
 
+# replace with values from nillion-testnet
 REACT_APP_NILLION_CLUSTER_ID=
 REACT_APP_NILLION_BOOTNODE_WEBSOCKET=
 REACT_APP_NILLION_NILCHAIN_JSON_RPC=
 REACT_APP_NILLION_NILCHAIN_REST_API=
-REACT_APP_NILLION_NILCHAIN_CHAIN_ID=nillion-chain-testnet-1
-
+REACT_APP_NILLION_NILCHAIN_CHAIN_ID=
 REACT_APP_NILLION_NILCHAIN_PRIVATE_KEY=
-REACT_APP_API_BASE_PATH=/nilchain-proxy
+
 ```
 
-Install dependencies and start the demo project. Notice that a local nillion_js_client.tgz is installed rather than a version of the JavaScript Client from npm. This version includes payments.
+Install dependencies and start the demo project.
 
 ```shell
 npm install
