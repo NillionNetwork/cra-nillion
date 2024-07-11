@@ -1,6 +1,6 @@
 # Nillion Operations and Blind Compute Demo
 
-This is a demo of the JavaScript Nillion Client working with payments connected to nillion-devnet.
+This is a demo of the JavaScript Nillion Client working with payments connected to nillion-devnet or the Nillion Testnet.
 
 Notes
 
@@ -56,6 +56,10 @@ vim "/Users/steph/Library/Application Support/nillion.nillion/nillion-devnet.env
 
 This file has the nillion-devnet generated values for cluster id, websocket, json rpc, and private key. You'll need to put these in your local .env in one of the next steps so that your cra-nillion demo app connects to the nillion-devnet.
 
+## Connect to the Nillion Testnet
+
+To connect your blind app to the Nillion Testnet, replace .env values with the [Testnet Config](https://docs.nillion.com/network-configuration)
+
 ## Clone this repo
 
 ```
@@ -72,7 +76,9 @@ cp .env.example .env
 Update your newly created .env with environment variables outout in your terminal by nillion-devnet
 
 ```
-# replace with values from nillion-devnet
+REACT_APP_API_BASE_PATH=/nilchain-proxy
+
+# replace with values from nillion-devnet or for Nillion Testnet
 
 REACT_APP_NILLION_CLUSTER_ID=
 REACT_APP_NILLION_BOOTNODE_WEBSOCKET=
