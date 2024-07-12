@@ -20,7 +20,10 @@ const Navbar: React.FC = () => {
           </Button>
         </Box>
         <Button color="inherit" component={RouterLink} to="/compute">
-          Nillion Blind Computation Demo
+          Blind Computation Demo
+        </Button>
+        <Button color="inherit" component={RouterLink} to="/blind-inference">
+          Blind Inference
         </Button>
       </Toolbar>
     </AppBar>

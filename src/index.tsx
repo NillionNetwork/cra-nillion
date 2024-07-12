@@ -9,12 +9,17 @@ import './styles/style.css'; // Import custom CSS
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from './theme';
+import BlindInferencePage from './BlindInferencePage';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Layout />,
     children: [
+      {
+        path: '/blind-inference',
+        element: <BlindInferencePage />,
+      },
       {
         path: '/compute',
         element: <ComputePage />,

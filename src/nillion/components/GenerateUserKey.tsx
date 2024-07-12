@@ -7,11 +7,15 @@ import { List, ListItem, ListItemText } from '@mui/material';
 
 interface GenerateUserKeyProps {
   setUserKey: (key: string) => void;
+  defaultUserKeySeed?: string;
 }
 
-const GenerateUserKey: React.FC<GenerateUserKeyProps> = ({ setUserKey }) => {
+const GenerateUserKey: React.FC<GenerateUserKeyProps> = ({
+  setUserKey,
+  defaultUserKeySeed = '',
+}) => {
   const [userKeyBase58, setUserKeyBase58] = useState<string | null>(null);
-  const [seed, setSeed] = useState<string>('');
+  const [seed, setSeed] = useState<string>(defaultUserKeySeed);
 
   const handleGenerateUserKey = async (event: React.FormEvent) => {
     event.preventDefault();

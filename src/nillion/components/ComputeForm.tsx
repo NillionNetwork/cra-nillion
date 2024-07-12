@@ -17,6 +17,7 @@ interface ComputeParty {
 }
 
 interface ComputeProgramProps {
+  shouldRescale?: boolean;
   nillionClient: nillion.NillionClient;
   programId: string;
   additionalComputeValues: nillion.NadaValues;
@@ -28,6 +29,7 @@ interface ComputeProgramProps {
 }
 
 const ComputeComponent: React.FC<ComputeProgramProps> = ({
+  shouldRescale = false,
   nillionClient,
   programId,
   additionalComputeValues,
@@ -94,6 +96,13 @@ const ComputeComponent: React.FC<ComputeProgramProps> = ({
       });
 
       setComputeResult(value);
+
+      if (shouldRescale) {
+        console.log(value);
+        const rescaledResult = parseFloat(value) / Math.pow(2, 32);
+        console.log(rescaledResult);
+        setComputeResult(rescaledResult);
+      }
 
       if (onComputeProgram) {
         onComputeProgram({ value });
