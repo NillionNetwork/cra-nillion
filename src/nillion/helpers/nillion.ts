@@ -30,7 +30,7 @@ export async function createNilChainClientAndWalletFromPrivateKey(): Promise<
   const wallet = await DirectSecp256k1Wallet.fromKey(key, 'nillion');
 
   const registry = new Registry();
-  registry.register(typeUrl, MsgPayFor);
+  await registry.register(typeUrl, MsgPayFor);
 
   const options = {
     registry,
