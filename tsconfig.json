@@ -7,8 +7,8 @@
       "esnext"
     ],
     "jsx": "react",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "module": "ESNext",
+    "moduleResolution": "bundler"
   },
   "include": [
     "src"

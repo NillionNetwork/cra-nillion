@@ -2,6 +2,7 @@
   "name": "cra-nillion",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@cosmjs/proto-signing": "^0.32.3",
     "@cosmjs/stargate": "^0.32.3",
@@ -52,5 +53,8 @@
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
+  },
+  "prettier": {
+    "singleQuote": true
   }
 }
