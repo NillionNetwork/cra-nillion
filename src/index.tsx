@@ -55,7 +55,8 @@ const client = NillionClient.create({
       '9a975f567428d054f2bf3092812e6c42f901ce07d9711bc77ee2cd81101f42c5',
     );
     return {
-      endpoint: 'http://localhost:8080/nilchain',
+      signer,
+      endpoint: 'http://localhost:8080/nilchain-proxy',
     };
   },
 });
