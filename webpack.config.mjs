@@ -1,10 +1,15 @@
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
-const path = require('path');
-const webpack = require('webpack');
-require('dotenv').config();
+import HtmlWebpackPlugin from 'html-webpack-plugin';
+import CopyWebpackPlugin from 'copy-webpack-plugin';
+import webpack from 'webpack';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-module.exports = {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// require("dotenv").config();
+
+export default {
   mode: 'development',
   entry: './src/index.tsx',
   output: {
@@ -27,10 +32,8 @@ module.exports = {
     proxy: [
       {
         context: ['/nilchain-proxy'],
-        target: process.env.REACT_APP_NILLION_NILCHAIN_JSON_RPC,
+        target: 'http://localhost:48102',
         pathRewrite: { '^/nilchain-proxy': '' },
-        changeOrigin: true,
-        secure: false,
       },
     ],
   },
@@ -50,17 +53,22 @@ module.exports = {
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
     fallback: {
-      crypto: require.resolve('crypto-browserify'),
-      buffer: require.resolve('buffer'),
-      stream: require.resolve('stream-browserify'),
-      vm: require.resolve('vm-browserify'),
+      crypto: false,
+      buffer: false,
+      stream: false,
+      vm: false,
     },
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
-        use: 'ts-loader',
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true,
+          },
+        },
         exclude: /node_modules/,
       },
       {
