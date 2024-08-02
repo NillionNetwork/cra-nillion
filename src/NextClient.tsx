@@ -10,7 +10,7 @@ export const NextClient = () => {
     {
       id,
       name: 'foo',
-      type: 'IntegerSecret',
+      type: 'SecretInteger',
     },
     {
       staleTime: 1000 * 30, // data stale after 30 seconds
