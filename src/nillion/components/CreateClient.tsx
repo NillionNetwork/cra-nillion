@@ -1,15 +1,15 @@
-import * as nillion from '@nillion/client-web';
-import React, { useState, useEffect } from 'react';
-import { config } from '../helpers/nillion';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
+import * as nillion from "@nillion/client-web";
+import React, { useEffect, useRef, useState } from "react";
+import { config } from "../helpers/nillion";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
+import TextField from "@mui/material/TextField";
 
 const initializeNillionClient = (
   userkey: any,
-  nodekey_seed?: string
+  nodekey_seed?: string,
 ): nillion.NillionClient => {
-  const nodeKey = nillion.NodeKey.from_seed(nodekey_seed || '');
+  const nodeKey = nillion.NodeKey.from_seed(nodekey_seed || "");
   return new nillion.NillionClient(userkey, nodeKey, config.bootnodes);
 };
 
@@ -18,21 +18,39 @@ interface CreateClientProps {
   setClient: (client: any) => void;
 }
 
+const generateRandomString = (length: number): string => {
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  const charactersLength = characters.length;
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
 const CreateClient: React.FC<CreateClientProps> = ({ userKey, setClient }) => {
-  const [seed, setSeed] = useState<string>('');
-  const defaultNodeKeySeed = `nillion-testnet-seed-${Math.floor(Math.random() * 10) + 1}`;
+  const [seed, setSeed] = useState<string>("");
+  const hasBeenSet = useRef(false);
+
+  const defaultNodeKeySeed = `nillion-testnet-${generateRandomString(64)}`;
 
   const initializeNewClient = async () => {
     if (userKey) {
+      console.info(`nodekey is: ${defaultNodeKeySeed}`);
       await nillion.default();
       const uk = nillion.UserKey.from_base58(userKey);
-      const newClient = await initializeNillionClient(uk, defaultNodeKeySeed);
+      const newClient = initializeNillionClient(uk, defaultNodeKeySeed);
+      nillion.NillionClient.enable_remote_logging();
       setClient(newClient);
     }
   };
 
   useEffect(() => {
-    initializeNewClient();
+    if (!hasBeenSet.current) {
+      initializeNewClient();
+      hasBeenSet.current = true;
+    }
   }, [userKey]);
 
   const handleClientNodeKeyUpdate = async (event: React.FormEvent) => {
