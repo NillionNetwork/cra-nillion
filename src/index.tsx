@@ -14,18 +14,18 @@ import BlindInferencePage from './BlindInferencePage';
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Layout />,
+    element: <Layout />,  // Layout renders for the root path "/"
     children: [
       {
-        path: '/blind-inference',
+        path: 'blind-inference', // Route becomes "/blind-inference"
         element: <BlindInferencePage />,
       },
       {
-        path: '/compute',
+        path: 'compute', // Route becomes "/compute"
         element: <ComputePage />,
       },
       {
-        path: '/',
+        index: true, // Set OperationsPage as the default child route (for "/")
         element: <OperationsPage />,
       },
     ],
