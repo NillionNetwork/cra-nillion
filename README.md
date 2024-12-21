@@ -73,7 +73,7 @@ Copy the up the .env.example file to a new .env and set up these variables to ma
 cp .env.example .env
 ```
 
-Update your newly created .env with environment variables outout in your terminal by nillion-devnet
+Update your newly created .env with environment variables output in your terminal by nillion-devnet
 
 ```
 REACT_APP_API_BASE_PATH=/nilchain-proxy
