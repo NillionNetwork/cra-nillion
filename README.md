@@ -1,3 +1,5 @@
+⛔️ DEPRECATED – See https://github.com/NillionNetwork/create-nillion-app instead.
+
 # Nillion Operations and Blind Compute Demo
 
 This is a demo of the JavaScript Nillion Client working with payments connected to nillion-devnet or the Nillion Testnet.
